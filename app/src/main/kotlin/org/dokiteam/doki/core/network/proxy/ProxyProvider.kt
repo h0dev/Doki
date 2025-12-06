@@ -86,6 +86,10 @@ class ProxyProvider @Inject constructor(
 				}
 				val proxyConfig = ProxyConfig.Builder()
 					.addProxyRule(url)
+					.addBypassRule("localhost")
+					.addBypassRule("127.0.0.1")
+					.addBypassRule("::1")
+					.removeImplicitRules()
 					.build()
 				suspendCoroutine { cont ->
 					controller.setProxyOverride(
