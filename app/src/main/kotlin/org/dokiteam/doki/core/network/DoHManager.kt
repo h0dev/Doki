@@ -88,11 +88,6 @@ class DoHManager(
 			.url("https://v.recipes/dns-query".toHttpUrl())
 			.resolvePublicAddresses(true)
 			.build()
-
-		DoHProvider.NEXTDNS -> DnsOverHttps.Builder().client(bootstrapClient)
-			.url("https://dns.nextdns.io/7316f8".toHttpUrl())
-			.resolvePublicAddresses(true)
-			.build()
 	}
 
 	private fun tryGetByIp(ip: String): InetAddress? = try {
