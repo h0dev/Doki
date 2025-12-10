@@ -88,6 +88,23 @@ class DoHManager(
 			.url("https://v.recipes/dns-query".toHttpUrl())
 			.resolvePublicAddresses(true)
 			.build()
+
+		DoHProvider.CUSTOM -> {
+			val customUrl = settings.customDohUrl
+			if (customUrl.isNullOrBlank()) {
+				Dns.SYSTEM
+			} else {
+				try {
+					DnsOverHttps.Builder().client(bootstrapClient)
+						.url(customUrl.toHttpUrl())
+						.resolvePrivateAddresses(true)
+						.build()
+				} catch (e: Exception) {
+					e.printStackTraceDebug()
+					Dns.SYSTEM
+				}
+			}
+		}
 	}
 
 	private fun tryGetByIp(ip: String): InetAddress? = try {

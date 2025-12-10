@@ -61,10 +61,10 @@ fun exploreRecommendationItemAD(
 		.addDelegate(ListItemType.MANGA_LIST, recommendationMangaItemAD(itemClickListener))
 	binding.pager.adapter = adapter
 	binding.pager.recyclerView?.isNestedScrollingEnabled = false
-	binding.dots.bindToViewPager(binding.pager)
 
 	bind {
 		adapter.items = item.manga
+		binding.dots.bindToViewPager(binding.pager)
 	}
 }
 
