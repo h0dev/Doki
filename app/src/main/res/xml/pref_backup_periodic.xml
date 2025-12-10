@@ -83,4 +83,31 @@
 
 	</PreferenceCategory>
 
+	<PreferenceCategory
+		android:key="backup_periodic_gdrive"
+		android:title="Google Drive Integration"
+		app:isPreferenceVisible="true">
+
+		<SwitchPreferenceCompat
+			android:defaultValue="false"
+			android:dependency="backup_periodic"
+			android:key="backup_periodic_gdrive_enabled"
+			android:title="@string/send_backups_google_drive"
+			android:summary="@string/google_drive_coming_soon" />
+
+		<Preference
+			android:dependency="backup_periodic_gdrive_enabled"
+			android:key="backup_periodic_gdrive_auth"
+			android:persistent="false"
+			android:summary="@string/google_drive_auth_summary"
+			android:title="@string/google_drive_auth" />
+
+		<Preference
+			android:dependency="backup_periodic_gdrive_enabled"
+			android:key="backup_periodic_gdrive_test"
+			android:persistent="false"
+			android:title="@string/google_drive_test" />
+
+	</PreferenceCategory>
+
 </androidx.preference.PreferenceScreen>

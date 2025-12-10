@@ -32,6 +32,9 @@ class PeriodicalBackupSettingsFragment : BasePreferenceFragment(R.string.periodi
 	@Inject
 	lateinit var telegramBackupUploader: TelegramBackupUploader
 
+	@Inject
+	lateinit var googleDriveBackupUploader: GoogleDriveBackupUploader
+
 	private val viewModel by viewModels<PeriodicalBackupSettingsViewModel>()
 
 	private val outputSelectCall = OpenDocumentTreeHelper(this, this)
@@ -59,6 +62,16 @@ class PeriodicalBackupSettingsFragment : BasePreferenceFragment(R.string.periodi
 			AppSettings.KEY_BACKUP_TG_OPEN -> telegramBackupUploader.openBotInApp(router)
 			AppSettings.KEY_BACKUP_TG_TEST -> {
 				viewModel.checkTelegram()
+				true
+			}
+			AppSettings.KEY_BACKUP_GDRIVE_AUTH -> {
+				// TODO: Implement Google Drive authentication
+				Snackbar.make(listView, R.string.google_drive_not_implemented, Snackbar.LENGTH_LONG).show()
+				true
+			}
+			AppSettings.KEY_BACKUP_GDRIVE_TEST -> {
+				// TODO: Implement Google Drive connection test
+				Snackbar.make(listView, R.string.google_drive_not_implemented, Snackbar.LENGTH_LONG).show()
 				true
 			}
 

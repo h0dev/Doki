@@ -573,6 +573,9 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 	val backupTelegramChatId: String?
 		get() = prefs.getString(KEY_BACKUP_TG_CHAT, null)?.nullIfEmpty()
 
+	val isBackupGoogleDriveUploadEnabled: Boolean
+		get() = prefs.getBoolean(KEY_BACKUP_GDRIVE_ENABLED, false)
+
 	val isReadingTimeEstimationEnabled: Boolean
 		get() = prefs.getBoolean(KEY_READING_TIME, true)
 
@@ -815,6 +818,7 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		const val KEY_COLLAPSE_DESCRIPTION = "description_collapse"
 		const val KEY_BACKUP_TG_ENABLED = "backup_periodic_tg_enabled"
 		const val KEY_BACKUP_TG_CHAT = "backup_periodic_tg_chat_id"
+		const val KEY_BACKUP_GDRIVE_ENABLED = "backup_periodic_gdrive_enabled"
 		const val KEY_MANGA_LIST_BADGES = "manga_list_badges"
 		const val KEY_TAGS_WARNINGS = "tags_warnings"
 		const val KEY_DISCORD_RPC = "discord_rpc"
@@ -835,6 +839,9 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		const val KEY_BACKUP_TG = "backup_periodic_tg"
 		const val KEY_BACKUP_TG_OPEN = "backup_periodic_tg_open"
 		const val KEY_BACKUP_TG_TEST = "backup_periodic_tg_test"
+		const val KEY_BACKUP_GDRIVE = "backup_periodic_gdrive"
+		const val KEY_BACKUP_GDRIVE_AUTH = "backup_periodic_gdrive_auth"
+		const val KEY_BACKUP_GDRIVE_TEST = "backup_periodic_gdrive_test"
 		const val KEY_CLEAR_MANGA_DATA = "manga_data_clear"
 		const val KEY_STORAGE_USAGE = "storage_usage"
 		const val KEY_WEBVIEW_CLEAR = "webview_clear"
