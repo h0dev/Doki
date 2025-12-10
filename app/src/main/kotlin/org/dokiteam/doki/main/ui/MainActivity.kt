@@ -44,7 +44,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.dokiteam.doki.R
 import org.dokiteam.doki.backups.ui.periodical.PeriodicalBackupService
-import org.dokiteam.doki.browser.AdListUpdateService
 import org.dokiteam.doki.core.exceptions.resolve.SnackbarErrorObserver
 import org.dokiteam.doki.core.nav.router
 import org.dokiteam.doki.core.os.VoiceInputContract
@@ -298,9 +297,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>(), AppBarOwner, BottomNav
 				requestNotificationsPermission()
 				startService(Intent(this@MainActivity, LocalIndexUpdateService::class.java))
 				startService(Intent(this@MainActivity, PeriodicalBackupService::class.java))
-				if (settings.isAdBlockEnabled) {
-					startService(Intent(this@MainActivity, AdListUpdateService::class.java))
-				}
 			}
 		}
 	}

@@ -10,7 +10,6 @@ import org.dokiteam.doki.core.model.MangaSource
 import org.dokiteam.doki.core.nav.AppRouter
 import org.dokiteam.doki.core.network.CommonHeaders
 import org.dokiteam.doki.core.network.proxy.ProxyProvider
-import org.dokiteam.doki.core.network.webview.adblock.AdBlock
 import org.dokiteam.doki.core.parser.MangaRepository
 import org.dokiteam.doki.core.parser.ParserMangaRepository
 import org.dokiteam.doki.core.ui.BaseActivity
@@ -29,9 +28,6 @@ abstract class BaseBrowserActivity : BaseActivity<ActivityBrowserBinding>(), Bro
 
 	@Inject
 	lateinit var mangaRepositoryFactory: MangaRepository.Factory
-
-	@Inject
-	lateinit var adBlock: AdBlock
 
 	private lateinit var onBackPressedCallback: WebViewBackPressedCallback
 
