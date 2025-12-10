@@ -111,6 +111,7 @@ class DotsIndicator @JvmOverloads constructor(
 	fun bindToViewPager(pager: ViewPager2) {
 		pager.registerOnPageChangeCallback(ViewPagerCallback())
 		pager.adapter?.let {
+			max = it.itemCount
 			it.registerAdapterDataObserver(AdapterObserver(it))
 		}
 	}
