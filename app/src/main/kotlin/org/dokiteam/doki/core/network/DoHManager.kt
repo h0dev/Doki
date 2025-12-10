@@ -92,15 +92,17 @@ class DoHManager(
 		DoHProvider.CUSTOM -> {
 			val customUrl = settings.customDohUrl
 			if (customUrl.isNullOrBlank()) {
+				// Fallback to system DNS if no custom URL is configured
 				Dns.SYSTEM
 			} else {
 				try {
 					DnsOverHttps.Builder().client(bootstrapClient)
 						.url(customUrl.toHttpUrl())
-						.resolvePrivateAddresses(true)
+						.resolvePrivateAddresses(false)  // Prevent SSRF attacks
 						.build()
 				} catch (e: Exception) {
 					e.printStackTraceDebug()
+					// Fallback to system DNS on error
 					Dns.SYSTEM
 				}
 			}
