@@ -207,6 +207,14 @@ fun Context.ensureRamAtLeast(requiredSize: Long) {
 	}
 }
 
+/**
+ * Configure WebView for parser usage.
+ *
+ * Note: WebView uses Android's system DNS resolver and cannot use app-specific DNS over HTTPS (DoH) configuration.
+ * DoH settings in the app apply only to OkHttp network requests, not WebView.
+ * To use DoH for WebView, users must enable Private DNS in Android system settings (Android 9+):
+ * Settings → Network & Internet → Private DNS
+ */
 fun WebView.configureForParser(userAgentOverride: String?) = with(settings) {
 	javaScriptEnabled = true
 	domStorageEnabled = true

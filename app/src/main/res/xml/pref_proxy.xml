@@ -43,4 +43,9 @@
 		android:title="@string/test_connection"
 		app:allowDividerAbove="true" />
 
+	<Preference
+		android:title="@string/byedpi_proxy"
+		android:summary="@string/byedpi_proxy_summary"
+		android:selectable="false" />
+
 </PreferenceScreen>

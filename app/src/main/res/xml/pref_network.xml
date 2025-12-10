@@ -41,6 +41,11 @@
 		android:inputType="textUri"
 		app:useSimpleSummaryProvider="true" />
 
+	<Preference
+		android:title="@string/doh_webview_note"
+		android:summary="@string/doh_webview_note_summary"
+		android:selectable="false" />
+
 	<ListPreference
 		android:defaultValue="-1"
 		android:entries="@array/image_proxies"
