@@ -262,6 +262,9 @@
     <string name="undo">Undo</string>
     <string name="removed_from_history">Removed from history</string>
     <string name="dns_over_https">DNS over HTTPS</string>
+    <string name="custom">Custom</string>
+    <string name="custom_doh_url">Custom DNS over HTTPS URL</string>
+    <string name="custom_doh_url_summary">Enter a custom DoH server URL (e.g., https://dns.example.com/dns-query)</string>
     <string name="default_mode">Default mode</string>
     <string name="detect_reader_mode">Autodetect reader mode</string>
     <string name="detect_reader_mode_summary">Automatically detect if manga is webtoon</string>

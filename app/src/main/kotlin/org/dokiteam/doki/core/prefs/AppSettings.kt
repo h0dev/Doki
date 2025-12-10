@@ -452,6 +452,10 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 	val dnsOverHttps: DoHProvider
 		get() = prefs.getEnumValue(KEY_DOH, DoHProvider.NONE)
 
+	var customDohUrl: String?
+		get() = prefs.getString(KEY_DOH_CUSTOM_URL, null)
+		set(value) = prefs.edit { putString(KEY_DOH_CUSTOM_URL, value) }
+
 	var isSSLBypassEnabled: Boolean
 		get() = prefs.getBoolean(KEY_SSL_BYPASS, false)
 		set(value) = prefs.edit { putBoolean(KEY_SSL_BYPASS, value) }
@@ -743,6 +747,7 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		const val KEY_DOWNLOADS_FORMAT = "downloads_format"
 		const val KEY_ALL_FAVOURITES_VISIBLE = "all_favourites_visible"
 		const val KEY_DOH = "doh"
+		const val KEY_DOH_CUSTOM_URL = "doh_custom_url"
 		const val KEY_EXIT_CONFIRM = "exit_confirm"
 		const val KEY_INCOGNITO_MODE = "incognito"
 		const val KEY_READER_MULTITASK = "reader_multitask"

@@ -25,6 +25,7 @@ class NetworkSettingsFragment :
 			setDefaultValueCompat(DoHProvider.NONE.name)
 		}
 		bindProxySummary()
+		updateCustomDohVisibility()
 	}
 
 	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -48,6 +49,10 @@ class NetworkSettingsFragment :
 			AppSettings.KEY_PROXY_PORT -> {
 				bindProxySummary()
 			}
+
+			AppSettings.KEY_DOH -> {
+				updateCustomDohVisibility()
+			}
 		}
 	}
 
@@ -61,6 +66,12 @@ class NetworkSettingsFragment :
 				address.isNullOrEmpty() || port == 0 -> context.getString(R.string.invalid_proxy_configuration)
 				else -> "$address:$port"
 			}
+		}
+	}
+
+	private fun updateCustomDohVisibility() {
+		findPreference<Preference>(AppSettings.KEY_DOH_CUSTOM_URL)?.run {
+			isVisible = settings.dnsOverHttps == DoHProvider.CUSTOM
 		}
 	}
 }
