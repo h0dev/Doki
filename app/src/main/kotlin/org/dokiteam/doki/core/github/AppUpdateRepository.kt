@@ -58,13 +58,7 @@ class AppUpdateRepository @Inject constructor(
 				jo.optString("content_type") == CONTENT_TYPE_APK
 			} ?: return@mapJSONNotNull null
 			val tagName = json.optString("tag_name", "")
-			// Filter by tag: only include releases with "stable" or "beta" tags
-			val isStableTag = tagName.contains("stable", ignoreCase = true)
-			val isBetaTag = tagName.contains("beta", ignoreCase = true)
-			if (!isStableTag && !isBetaTag) {
-				return@mapJSONNotNull null
-			}
-			AppVersion(
+			val version = AppVersion(
 				id = json.getLong("id"),
 				url = json.getString("html_url"),
 				name = json.getString("name").removePrefix("v"),
@@ -73,6 +67,11 @@ class AppUpdateRepository @Inject constructor(
 				description = json.getString("body"),
 				tagName = tagName,
 			)
+			// Filter by tag: only include releases with "stable" or "beta" tags
+			if (!version.isStableTag && !version.isBetaTag) {
+				return@mapJSONNotNull null
+			}
+			version
 		}
 	}
 
