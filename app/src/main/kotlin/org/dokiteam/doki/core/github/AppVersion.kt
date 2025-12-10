@@ -12,8 +12,15 @@ data class AppVersion(
 	val apkSize: Long,
 	val apkUrl: String,
 	val description: String,
+	val tagName: String = "",
 ) : Parcelable {
 
 	@IgnoredOnParcel
 	val versionId = VersionId(name)
+
+	@IgnoredOnParcel
+	val isStableTag = tagName.contains("stable", ignoreCase = true)
+
+	@IgnoredOnParcel
+	val isBetaTag = tagName.contains("beta", ignoreCase = true)
 }

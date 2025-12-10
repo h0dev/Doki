@@ -57,14 +57,21 @@ class AppUpdateRepository @Inject constructor(
 			val asset = json.optJSONArray("assets")?.find { jo ->
 				jo.optString("content_type") == CONTENT_TYPE_APK
 			} ?: return@mapJSONNotNull null
-			AppVersion(
+			val tagName = json.optString("tag_name", "")
+			val version = AppVersion(
 				id = json.getLong("id"),
 				url = json.getString("html_url"),
 				name = json.getString("name").removePrefix("v"),
 				apkSize = asset.getLong("size"),
 				apkUrl = asset.getString("browser_download_url"),
 				description = json.getString("body"),
+				tagName = tagName,
 			)
+			// Filter by tag: only include releases with "stable" or "beta" tags
+			if (!version.isStableTag && !version.isBetaTag) {
+				return@mapJSONNotNull null
+			}
+			version
 		}
 	}
 
@@ -76,8 +83,13 @@ class AppUpdateRepository @Inject constructor(
 			val currentVersion = VersionId(BuildConfig.VERSION_NAME)
 			val available = getAvailableVersions().asArrayList()
 			available.sortBy { it.versionId }
+			// Filter by version stability
 			if (currentVersion.isStable && !settings.isUnstableUpdatesAllowed) {
 				available.retainAll { it.versionId.isStable }
+			}
+			// Filter by tag: if unstable updates not allowed, only show stable-tagged releases
+			if (!settings.isUnstableUpdatesAllowed) {
+				available.retainAll { it.isStableTag }
 			}
 			available.maxByOrNull { it.versionId }
 				?.takeIf { it.versionId > currentVersion }
