@@ -72,17 +72,43 @@ class ProxyProvider @Inject constructor(
 				val url = buildString {
 					when (settings.proxyType) {
 						Proxy.Type.DIRECT -> Unit
-						Proxy.Type.HTTP -> append("http")
-						Proxy.Type.SOCKS -> append("socks")
+						Proxy.Type.HTTP -> {
+							append("http://")
+							// Include credentials in URL for HTTP proxy authentication
+							val login = settings.proxyLogin
+							val password = settings.proxyPassword
+							if (!login.isNullOrEmpty() && !password.isNullOrEmpty()) {
+								append(login)
+								append(':')
+								append(password)
+								append('@')
+							}
+						}
+						Proxy.Type.SOCKS -> {
+							append("socks://")
+							// Include credentials in URL for SOCKS proxy authentication
+							val login = settings.proxyLogin
+							val password = settings.proxyPassword
+							if (!login.isNullOrEmpty() && !password.isNullOrEmpty()) {
+								append(login)
+								append(':')
+								append(password)
+								append('@')
+							}
+						}
 					}
-					append("://")
 					append(settings.proxyAddress)
 					append(':')
 					append(settings.proxyPort)
 				}
 				if (settings.proxyType == Proxy.Type.SOCKS) {
-					System.setProperty("java.net.socks.username", settings.proxyLogin)
-					System.setProperty("java.net.socks.password", settings.proxyPassword)
+					// Also set system properties for SOCKS authentication as fallback
+					val login = settings.proxyLogin
+					val password = settings.proxyPassword
+					if (!login.isNullOrEmpty() && !password.isNullOrEmpty()) {
+						System.setProperty("java.net.socks.username", login)
+						System.setProperty("java.net.socks.password", password)
+					}
 				}
 				val proxyConfig = ProxyConfig.Builder()
 					.addProxyRule(url)

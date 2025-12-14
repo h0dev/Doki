@@ -87,9 +87,13 @@ class AppUpdateRepository @Inject constructor(
 			if (currentVersion.isStable && !settings.isUnstableUpdatesAllowed) {
 				available.retainAll { it.versionId.isStable }
 			}
-			// Filter by tag: if unstable updates not allowed, show both stable and beta tagged releases
-			if (!settings.isUnstableUpdatesAllowed) {
-				available.retainAll { it.isStableTag || it.isBetaTag }
+			// Filter by build type: release builds only get "stable" tags, debug builds only get "beta" tags
+			if (BuildConfig.DEBUG) {
+				// Debug builds should only receive beta-tagged updates
+				available.retainAll { it.isBetaTag }
+			} else {
+				// Release builds should only receive stable-tagged updates
+				available.retainAll { it.isStableTag }
 			}
 			available.maxByOrNull { it.versionId }
 				?.takeIf { it.versionId > currentVersion }
