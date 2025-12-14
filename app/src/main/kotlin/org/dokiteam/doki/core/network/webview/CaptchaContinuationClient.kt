@@ -3,6 +3,7 @@ package org.dokiteam.doki.core.network.webview
 import android.graphics.Bitmap
 import android.webkit.WebView
 import org.dokiteam.doki.core.network.cookies.MutableCookieJar
+import org.dokiteam.doki.core.network.proxy.ProxyProvider
 import org.dokiteam.doki.parsers.network.CloudFlareHelper
 import kotlin.coroutines.Continuation
 
@@ -10,7 +11,8 @@ class CaptchaContinuationClient(
 	private val cookieJar: MutableCookieJar,
 	private val targetUrl: String,
 	continuation: Continuation<Unit>,
-) : ContinuationResumeWebViewClient(continuation) {
+	proxyProvider: ProxyProvider? = null,
+) : ContinuationResumeWebViewClient(continuation, proxyProvider) {
 
 	private val oldClearance = CloudFlareHelper.getClearanceCookie(cookieJar, targetUrl)
 
