@@ -89,17 +89,7 @@ class AppUpdateRepository @Inject constructor(
 			}
 			// Filter by build type: release builds prefer "stable" tags, debug builds prefer "beta" tags
 			// This ensures proper update channel separation while respecting user preferences
-			if (BuildConfig.DEBUG) {
-				// Debug builds should prefer beta-tagged updates
-				if (available.any { it.isBetaTag }) {
-					available.retainAll { it.isBetaTag }
-				}
-			} else {
-				// Release builds should prefer stable-tagged updates
-				if (available.any { it.isStableTag }) {
-					available.retainAll { it.isStableTag }
-				}
-			}
+			filterByBuildType(available)
 			available.maxByOrNull { it.versionId }
 				?.takeIf { it.versionId > currentVersion }
 		}.onFailure {
@@ -107,6 +97,18 @@ class AppUpdateRepository @Inject constructor(
 		}.onSuccess {
 			availableUpdate.value = it
 		}.getOrNull()
+	}
+
+	private fun filterByBuildType(available: MutableList<AppVersion>) {
+		val tagPredicate: (AppVersion) -> Boolean = if (BuildConfig.DEBUG) {
+			{ it.isBetaTag }
+		} else {
+			{ it.isStableTag }
+		}
+		// Only filter if there are tagged releases matching the build type
+		if (available.any(tagPredicate)) {
+			available.retainAll(tagPredicate)
+		}
 	}
 
 	@Suppress("KotlinConstantConditions")
