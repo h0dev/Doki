@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import androidx.core.content.pm.PackageInfoCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import org.dokiteam.doki.BuildConfig
 import org.dokiteam.doki.parsers.util.suspendlazy.suspendLazy
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,6 +17,10 @@ class AppValidator @Inject constructor(
 ) {
 	@SuppressLint("InlinedApi")
 	val isOriginalApp = suspendLazy(Dispatchers.Default) {
+		// Allow debug builds to receive OTA updates for testing
+		if (BuildConfig.DEBUG) {
+			return@suspendLazy true
+		}
 		val certificates = mapOf(CERT_SHA256.hexToByteArray() to PackageManager.CERT_INPUT_SHA256)
 		PackageInfoCompat.hasSignatures(context.packageManager, context.packageName, certificates, false)
 	}
