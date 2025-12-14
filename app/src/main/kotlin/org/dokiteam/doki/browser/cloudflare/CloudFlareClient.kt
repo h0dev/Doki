@@ -14,7 +14,8 @@ class CloudFlareClient(
 	private val callback: CloudFlareCallback,
 	adBlock: AdBlock,
 	private val targetUrl: String,
-) : BrowserClient(callback, adBlock) {
+	proxyProvider: org.dokiteam.doki.core.network.proxy.ProxyProvider? = null,
+) : BrowserClient(callback, adBlock, proxyProvider) {
 
 	private val oldClearance = getClearance()
 	private var counter = 0
