@@ -83,14 +83,13 @@ class AppUpdateRepository @Inject constructor(
 			val currentVersion = VersionId(BuildConfig.VERSION_NAME)
 			val available = getAvailableVersions().asArrayList()
 			available.sortBy { it.versionId }
-			// Filter by version stability
+			// Filter by version stability based on user preference
 			if (currentVersion.isStable && !settings.isUnstableUpdatesAllowed) {
 				available.retainAll { it.versionId.isStable }
 			}
-			// Filter by tag: if unstable updates not allowed, show both stable and beta tagged releases
-			if (!settings.isUnstableUpdatesAllowed) {
-				available.retainAll { it.isStableTag || it.isBetaTag }
-			}
+			// Filter by build type: release builds prefer "stable" tags, debug builds prefer "beta" tags
+			// This ensures proper update channel separation while respecting user preferences
+			filterByBuildType(available)
 			available.maxByOrNull { it.versionId }
 				?.takeIf { it.versionId > currentVersion }
 		}.onFailure {
@@ -98,6 +97,18 @@ class AppUpdateRepository @Inject constructor(
 		}.onSuccess {
 			availableUpdate.value = it
 		}.getOrNull()
+	}
+
+	private fun filterByBuildType(available: MutableList<AppVersion>) {
+		val tagPredicate: (AppVersion) -> Boolean = if (BuildConfig.DEBUG) {
+			{ it.isBetaTag }
+		} else {
+			{ it.isStableTag }
+		}
+		// Only filter if there are tagged releases matching the build type
+		if (available.any(tagPredicate)) {
+			available.retainAll(tagPredicate)
+		}
 	}
 
 	@Suppress("KotlinConstantConditions")

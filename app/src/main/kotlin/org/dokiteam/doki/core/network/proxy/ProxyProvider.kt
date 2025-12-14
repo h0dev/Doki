@@ -1,5 +1,6 @@
 package org.dokiteam.doki.core.network.proxy
 
+import android.net.Uri
 import androidx.webkit.ProxyConfig
 import androidx.webkit.ProxyController
 import androidx.webkit.WebViewFeature
@@ -69,20 +70,15 @@ class ProxyProvider @Inject constructor(
 					}
 				}
 			} else {
-				val url = buildString {
-					when (settings.proxyType) {
-						Proxy.Type.DIRECT -> Unit
-						Proxy.Type.HTTP -> append("http")
-						Proxy.Type.SOCKS -> append("socks")
-					}
-					append("://")
-					append(settings.proxyAddress)
-					append(':')
-					append(settings.proxyPort)
-				}
+				val url = buildProxyUrl()
 				if (settings.proxyType == Proxy.Type.SOCKS) {
-					System.setProperty("java.net.socks.username", settings.proxyLogin)
-					System.setProperty("java.net.socks.password", settings.proxyPassword)
+					// Also set system properties for SOCKS authentication as fallback
+					val login = settings.proxyLogin
+					val password = settings.proxyPassword
+					if (!login.isNullOrEmpty() && !password.isNullOrEmpty()) {
+						System.setProperty("java.net.socks.username", login)
+						System.setProperty("java.net.socks.password", password)
+					}
 				}
 				val proxyConfig = ProxyConfig.Builder()
 					.addProxyRule(url)
@@ -101,6 +97,26 @@ class ProxyProvider @Inject constructor(
 				}
 			}
 		}
+	}
+
+	private fun buildProxyUrl(): String = buildString {
+		when (settings.proxyType) {
+			Proxy.Type.DIRECT -> Unit
+			Proxy.Type.HTTP -> append("http://")
+			Proxy.Type.SOCKS -> append("socks://")
+		}
+		// Include credentials in URL for proxy authentication with proper URL encoding
+		val login = settings.proxyLogin
+		val password = settings.proxyPassword
+		if (!login.isNullOrEmpty() && !password.isNullOrEmpty()) {
+			append(Uri.encode(login))
+			append(':')
+			append(Uri.encode(password))
+			append('@')
+		}
+		append(settings.proxyAddress)
+		append(':')
+		append(settings.proxyPort)
 	}
 
 	private fun isProxyEnabled() = settings.proxyType != Proxy.Type.DIRECT
