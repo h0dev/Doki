@@ -69,38 +69,7 @@ class ProxyProvider @Inject constructor(
 					}
 				}
 			} else {
-				val url = buildString {
-					when (settings.proxyType) {
-						Proxy.Type.DIRECT -> Unit
-						Proxy.Type.HTTP -> {
-							append("http://")
-							// Include credentials in URL for HTTP proxy authentication
-							val login = settings.proxyLogin
-							val password = settings.proxyPassword
-							if (!login.isNullOrEmpty() && !password.isNullOrEmpty()) {
-								append(login)
-								append(':')
-								append(password)
-								append('@')
-							}
-						}
-						Proxy.Type.SOCKS -> {
-							append("socks://")
-							// Include credentials in URL for SOCKS proxy authentication
-							val login = settings.proxyLogin
-							val password = settings.proxyPassword
-							if (!login.isNullOrEmpty() && !password.isNullOrEmpty()) {
-								append(login)
-								append(':')
-								append(password)
-								append('@')
-							}
-						}
-					}
-					append(settings.proxyAddress)
-					append(':')
-					append(settings.proxyPort)
-				}
+				val url = buildProxyUrl()
 				if (settings.proxyType == Proxy.Type.SOCKS) {
 					// Also set system properties for SOCKS authentication as fallback
 					val login = settings.proxyLogin
@@ -127,6 +96,26 @@ class ProxyProvider @Inject constructor(
 				}
 			}
 		}
+	}
+
+	private fun buildProxyUrl(): String = buildString {
+		when (settings.proxyType) {
+			Proxy.Type.DIRECT -> Unit
+			Proxy.Type.HTTP -> append("http://")
+			Proxy.Type.SOCKS -> append("socks://")
+		}
+		// Include credentials in URL for proxy authentication
+		val login = settings.proxyLogin
+		val password = settings.proxyPassword
+		if (!login.isNullOrEmpty() && !password.isNullOrEmpty()) {
+			append(login)
+			append(':')
+			append(password)
+			append('@')
+		}
+		append(settings.proxyAddress)
+		append(':')
+		append(settings.proxyPort)
 	}
 
 	private fun isProxyEnabled() = settings.proxyType != Proxy.Type.DIRECT

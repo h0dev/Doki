@@ -83,17 +83,22 @@ class AppUpdateRepository @Inject constructor(
 			val currentVersion = VersionId(BuildConfig.VERSION_NAME)
 			val available = getAvailableVersions().asArrayList()
 			available.sortBy { it.versionId }
-			// Filter by version stability
+			// Filter by version stability based on user preference
 			if (currentVersion.isStable && !settings.isUnstableUpdatesAllowed) {
 				available.retainAll { it.versionId.isStable }
 			}
-			// Filter by build type: release builds only get "stable" tags, debug builds only get "beta" tags
+			// Filter by build type: release builds prefer "stable" tags, debug builds prefer "beta" tags
+			// This ensures proper update channel separation while respecting user preferences
 			if (BuildConfig.DEBUG) {
-				// Debug builds should only receive beta-tagged updates
-				available.retainAll { it.isBetaTag }
+				// Debug builds should prefer beta-tagged updates
+				if (available.any { it.isBetaTag }) {
+					available.retainAll { it.isBetaTag }
+				}
 			} else {
-				// Release builds should only receive stable-tagged updates
-				available.retainAll { it.isStableTag }
+				// Release builds should prefer stable-tagged updates
+				if (available.any { it.isStableTag }) {
+					available.retainAll { it.isStableTag }
+				}
 			}
 			available.maxByOrNull { it.versionId }
 				?.takeIf { it.versionId > currentVersion }
