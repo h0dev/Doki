@@ -48,7 +48,7 @@ class WebViewExecutor @Inject constructor(
 			val webView = obtainWebView()
 			if (!baseUrl.isNullOrEmpty()) {
 				suspendCoroutine { cont ->
-					webView.webViewClient = ContinuationResumeWebViewClient(cont)
+					webView.webViewClient = ContinuationResumeWebViewClient(cont, proxyProvider)
 					webView.loadDataWithBaseURL(baseUrl, " ", "text/html", null, null)
 				}
 			}
@@ -75,6 +75,7 @@ class WebViewExecutor @Inject constructor(
 									cookieJar = cookieJar,
 									targetUrl = exception.url,
 									continuation = cont,
+									proxyProvider = proxyProvider,
 								)
 								cont.invokeOnCancellation {
 									webView.stopLoading()
