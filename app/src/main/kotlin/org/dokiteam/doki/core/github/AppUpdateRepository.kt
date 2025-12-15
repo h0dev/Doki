@@ -13,7 +13,6 @@ import org.json.JSONObject
 import org.dokiteam.doki.BuildConfig
 import org.dokiteam.doki.R
 import org.dokiteam.doki.core.network.BaseHttpClient
-import org.dokiteam.doki.core.os.AppValidator
 import org.dokiteam.doki.core.util.ext.asArrayList
 import org.dokiteam.doki.core.util.ext.printStackTraceDebug
 import org.dokiteam.doki.parsers.util.await
@@ -28,7 +27,6 @@ private const val CONTENT_TYPE_APK = "application/vnd.android.package-archive"
 
 @Singleton
 class AppUpdateRepository @Inject constructor(
-	private val appValidator: AppValidator,
 	@BaseHttpClient private val okHttp: OkHttpClient,
 	@ApplicationContext context: Context,
 ) {
@@ -101,8 +99,8 @@ class AppUpdateRepository @Inject constructor(
 
 	@Suppress("KotlinConstantConditions")
 	suspend fun isUpdateSupported(): Boolean {
-		// Allow updates for debug builds (for testing) or original app (for production)
-		return BuildConfig.DEBUG || appValidator.isOriginalApp.getOrNull() == true
+		// Allow updates for all builds (debug and release)
+		return true
 	}
 
 	private inline fun JSONArray.find(predicate: (JSONObject) -> Boolean): JSONObject? {
