@@ -25,6 +25,37 @@ import javax.inject.Singleton
 
 private const val CONTENT_TYPE_APK = "application/vnd.android.package-archive"
 
+/**
+ * Extracts version number from release name.
+ * Handles formats like:
+ * - "Stable Release 1.2.7" -> "1.2.7"
+ * - "Beta Release 1.2.7" -> "1.2.7"
+ * - "v1.2.7" -> "1.2.7"
+ * - "1.2.7" -> "1.2.7"
+ * - "Stable Release main" -> null (invalid)
+ * - "Beta Build abc123" -> null (invalid)
+ */
+internal fun extractVersionFromReleaseName(name: String): String? {
+	// Remove common prefixes
+	val cleaned = name
+		.removePrefix("Stable Release ")
+		.removePrefix("Beta Release ")
+		.removePrefix("Beta Build ")
+		.removePrefix("v")
+		.trim()
+	
+	// Check if the result looks like a version number (starts with a digit and contains a dot)
+	if (cleaned.isEmpty() || !cleaned[0].isDigit() || !cleaned.contains('.')) {
+		return null
+	}
+	
+	// Extract just the version part (e.g., "1.2.7-beta1" or "1.2.7")
+	// This handles cases where there might be additional text after the version
+	val versionPattern = Regex("""^(\d+\.\d+(?:\.\d+)?(?:-[a-zA-Z0-9]+)?)""")
+	val match = versionPattern.find(cleaned)
+	return match?.groupValues?.get(1)
+}
+
 @Singleton
 class AppUpdateRepository @Inject constructor(
 	@BaseHttpClient private val okHttp: OkHttpClient,
@@ -53,10 +84,16 @@ class AppUpdateRepository @Inject constructor(
 				jo.optString("content_type") == CONTENT_TYPE_APK
 			} ?: return@mapJSONNotNull null
 			val tagName = json.optString("tag_name", "")
+			val releaseName = json.getString("name")
+			val versionName = extractVersionFromReleaseName(releaseName)
+			// Skip releases where we can't extract a valid version
+			if (versionName == null) {
+				return@mapJSONNotNull null
+			}
 			val version = AppVersion(
 				id = json.getLong("id"),
 				url = json.getString("html_url"),
-				name = json.getString("name").removePrefix("v"),
+				name = versionName,
 				apkSize = asset.getLong("size"),
 				apkUrl = asset.getString("browser_download_url"),
 				description = json.getString("body"),

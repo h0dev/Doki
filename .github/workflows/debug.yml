@@ -75,8 +75,15 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           cd app/build/outputs/apk/debug
+          # Extract version from build.gradle
+          VERSION=$(grep 'versionName = ' ../../../../app/build.gradle | sed "s/.*versionName = '\(.*\)'/\1/")
+          if [ -z "$VERSION" ]; then
+            echo "❌ Could not extract version from build.gradle"
+            exit 1
+          fi
           COMMIT=$(git rev-parse --short HEAD)
+          echo "✅ Extracted version: ${VERSION}"
           gh release create beta "$APK_NAME" \
-            --title "Beta Build ${COMMIT}" \
-            --notes "🧪 Bản thử nghiệm mới nhất (beta)\nCommit: ${COMMIT}\nBranch: main" \
+            --title "Beta Release ${VERSION}" \
+            --notes "🧪 Bản thử nghiệm mới nhất (beta)\nVersion: ${VERSION}\nCommit: ${COMMIT}\nBranch: main" \
             --prerelease

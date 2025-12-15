@@ -75,7 +75,13 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           cd app/build/outputs/apk/release
-          VERSION=${GITHUB_REF_NAME}
+          # Extract version from build.gradle
+          VERSION=$(grep 'versionName = ' ../../../../app/build.gradle | sed "s/.*versionName = '\(.*\)'/\1/")
+          if [ -z "$VERSION" ]; then
+            echo "❌ Could not extract version from build.gradle"
+            exit 1
+          fi
+          echo "✅ Extracted version: ${VERSION}"
           gh release create stable "$APK_NAME" \
             --title "Stable Release ${VERSION}" \
             --notes "🏷️ Phiên bản chính thức ${VERSION}\n🚀 Commit: $(git rev-parse --short HEAD)" \
