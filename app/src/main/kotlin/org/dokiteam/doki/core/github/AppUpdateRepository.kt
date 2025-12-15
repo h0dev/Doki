@@ -14,7 +14,6 @@ import org.dokiteam.doki.BuildConfig
 import org.dokiteam.doki.R
 import org.dokiteam.doki.core.network.BaseHttpClient
 import org.dokiteam.doki.core.os.AppValidator
-import org.dokiteam.doki.core.prefs.AppSettings
 import org.dokiteam.doki.core.util.ext.asArrayList
 import org.dokiteam.doki.core.util.ext.printStackTraceDebug
 import org.dokiteam.doki.parsers.util.await
@@ -26,12 +25,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 private const val CONTENT_TYPE_APK = "application/vnd.android.package-archive"
-private const val BUILD_TYPE_RELEASE = "release"
 
 @Singleton
 class AppUpdateRepository @Inject constructor(
 	private val appValidator: AppValidator,
-	private val settings: AppSettings,
 	@BaseHttpClient private val okHttp: OkHttpClient,
 	@ApplicationContext context: Context,
 ) {
@@ -83,12 +80,14 @@ class AppUpdateRepository @Inject constructor(
 			val currentVersion = VersionId(BuildConfig.VERSION_NAME)
 			val available = getAvailableVersions().asArrayList()
 			available.sortBy { it.versionId }
-			// Filter by version stability
-			if (currentVersion.isStable && !settings.isUnstableUpdatesAllowed) {
-				available.retainAll { it.versionId.isStable }
-			}
-			// Filter by tag: if unstable updates not allowed, only show stable-tagged releases
-			if (!settings.isUnstableUpdatesAllowed) {
+			// Filter by build type:
+			// - Release builds (stable) only get "stable" tagged releases
+			// - Debug builds (beta) only get "beta" tagged releases
+			if (BuildConfig.DEBUG) {
+				// Debug build: only show beta-tagged releases
+				available.retainAll { it.isBetaTag }
+			} else {
+				// Release build: only show stable-tagged releases
 				available.retainAll { it.isStableTag }
 			}
 			available.maxByOrNull { it.versionId }
