@@ -3,6 +3,7 @@ package org.dokiteam.doki.browser
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.os.Looper
+import android.webkit.HttpAuthHandler
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -11,12 +12,14 @@ import androidx.annotation.AnyThread
 import androidx.annotation.WorkerThread
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import org.dokiteam.doki.core.network.proxy.ProxyProvider
 import org.dokiteam.doki.core.network.webview.adblock.AdBlock
 import java.io.ByteArrayInputStream
 
 open class BrowserClient(
 	private val callback: BrowserCallback,
 	private val adBlock: AdBlock?,
+	private val proxyProvider: ProxyProvider? = null,
 ) : WebViewClient() {
 
 	/**
@@ -41,6 +44,20 @@ open class BrowserClient(
 	override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
 		super.doUpdateVisitedHistory(view, url, isReload)
 		callback.onHistoryChanged()
+	}
+
+	override fun onReceivedHttpAuthRequest(
+		view: WebView?,
+		handler: HttpAuthHandler?,
+		host: String?,
+		realm: String?
+	) {
+		val credentials = proxyProvider?.getProxyCredentials()
+		if (credentials != null && handler != null) {
+			handler.proceed(credentials.first, credentials.second)
+		} else {
+			super.onReceivedHttpAuthRequest(view, handler, host, realm)
+		}
 	}
 
 	@WorkerThread

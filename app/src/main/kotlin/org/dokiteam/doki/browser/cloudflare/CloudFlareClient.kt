@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.webkit.WebView
 import org.dokiteam.doki.browser.BrowserClient
 import org.dokiteam.doki.core.network.cookies.MutableCookieJar
+import org.dokiteam.doki.core.network.proxy.ProxyProvider
 import org.dokiteam.doki.core.network.webview.adblock.AdBlock
 import org.dokiteam.doki.parsers.network.CloudFlareHelper
 
@@ -14,7 +15,8 @@ class CloudFlareClient(
 	private val callback: CloudFlareCallback,
 	adBlock: AdBlock,
 	private val targetUrl: String,
-) : BrowserClient(callback, adBlock) {
+	proxyProvider: ProxyProvider? = null,
+) : BrowserClient(callback, adBlock, proxyProvider) {
 
 	private val oldClearance = getClearance()
 	private var counter = 0
