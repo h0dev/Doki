@@ -106,7 +106,7 @@ class ProxyProvider @Inject constructor(
 			Proxy.Type.SOCKS -> append("socks://")
 		}
 		// Do not embed credentials in URL - ProxyConfig.addProxyRule() doesn't support it
-		// Authentication is handled by onReceivedHttpAuthRequest() in WebViewClient
+		// For HTTP proxies with authentication, WebView requests are intercepted and fetched via OkHttp
 		append(settings.proxyAddress)
 		append(':')
 		append(settings.proxyPort)

@@ -66,9 +66,7 @@ open class BrowserClient(
 		
 		// Intercept request for proxy authentication if needed
 		if (proxyProvider?.needsWebViewRequestInterception() == true && okHttpClient != null) {
-			return runBlocking(Dispatchers.IO) {
-				interceptRequestWithOkHttp(url, null)
-			}
+			return interceptRequestWithOkHttp(url, null)
 		}
 		
 		return super.shouldInterceptRequest(view, url)
@@ -90,9 +88,7 @@ open class BrowserClient(
 		
 		// Intercept request for proxy authentication if needed
 		if (proxyProvider?.needsWebViewRequestInterception() == true && okHttpClient != null) {
-			return runBlocking(Dispatchers.IO) {
-				interceptRequestWithOkHttp(request.url.toString(), request)
-			}
+			return interceptRequestWithOkHttp(request.url.toString(), request)
 		}
 		
 		return super.shouldInterceptRequest(view, request)
