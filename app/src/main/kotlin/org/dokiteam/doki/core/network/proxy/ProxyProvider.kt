@@ -105,6 +105,15 @@ class ProxyProvider @Inject constructor(
 
 	private fun isProxyEnabled() = settings.proxyType != Proxy.Type.DIRECT
 
+	fun getProxyCredentials(): Pair<String, String>? {
+		if (!isProxyEnabled()) {
+			return null
+		}
+		val login = settings.proxyLogin ?: return null
+		val password = settings.proxyPassword ?: return null
+		return Pair(login, password)
+	}
+
 	private fun getProxy(): Proxy {
 		val type = settings.proxyType
 		val address = settings.proxyAddress
