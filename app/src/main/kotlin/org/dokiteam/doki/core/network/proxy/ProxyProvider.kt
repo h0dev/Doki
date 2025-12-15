@@ -105,15 +105,8 @@ class ProxyProvider @Inject constructor(
 			Proxy.Type.HTTP -> append("http://")
 			Proxy.Type.SOCKS -> append("socks://")
 		}
-		// Embed credentials in URL for WebView proxy authentication
-		val login = settings.proxyLogin
-		val password = settings.proxyPassword
-		if (!login.isNullOrEmpty() && !password.isNullOrEmpty()) {
-			append(Uri.encode(login))
-			append(':')
-			append(Uri.encode(password))
-			append('@')
-		}
+		// Do not embed credentials in URL - ProxyConfig.addProxyRule() doesn't support it
+		// Authentication is handled by onReceivedHttpAuthRequest() in WebViewClient
 		append(settings.proxyAddress)
 		append(':')
 		append(settings.proxyPort)
