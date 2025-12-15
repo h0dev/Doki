@@ -1,6 +1,5 @@
 package org.dokiteam.doki.core.network.webview
 
-import android.webkit.HttpAuthHandler
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import org.dokiteam.doki.core.network.proxy.ProxyProvider
@@ -16,44 +15,19 @@ open class ContinuationResumeWebViewClient(
 		resumeContinuation(view)
 	}
 
-	override fun onReceivedHttpAuthRequest(
-		view: WebView?,
-		handler: HttpAuthHandler?,
-		host: String?,
-		realm: String?
-	) {
-		val credentials = proxyProvider?.getProxyCredentials()
-		if (handler != null && credentials != null) {
-			handler.proceed(credentials.first, credentials.second)
-		} else {
-			super.onReceivedHttpAuthRequest(view, handler, host, realm)
-		}
-	}
-
 	protected fun resumeContinuation(view: WebView?) {
 		view?.webViewClient = ProxyWebViewClient(proxyProvider)
 		continuation.resume(Unit)
 	}
 
 	/**
-	 * A simple WebViewClient that supports proxy authentication
+	 * A simple WebViewClient placeholder
 	 */
 	private class ProxyWebViewClient(
 		private val proxyProvider: ProxyProvider?
 	) : WebViewClient() {
-
-		override fun onReceivedHttpAuthRequest(
-			view: WebView?,
-			handler: HttpAuthHandler?,
-			host: String?,
-			realm: String?
-		) {
-			val credentials = proxyProvider?.getProxyCredentials()
-			if (handler != null && credentials != null) {
-				handler.proceed(credentials.first, credentials.second)
-			} else {
-				super.onReceivedHttpAuthRequest(view, handler, host, realm)
-			}
-		}
+		// This is just a placeholder to replace the continuation client
+		// Proxy authentication for HTTP proxies is not supported here
+		// since WebView doesn't have native support for it
 	}
 }

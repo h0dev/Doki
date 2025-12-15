@@ -6,8 +6,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import dagger.hilt.android.AndroidEntryPoint
+import okhttp3.OkHttpClient
 import org.dokiteam.doki.core.model.MangaSource
 import org.dokiteam.doki.core.nav.AppRouter
+import org.dokiteam.doki.core.network.BaseHttpClient
 import org.dokiteam.doki.core.network.CommonHeaders
 import org.dokiteam.doki.core.network.proxy.ProxyProvider
 import org.dokiteam.doki.core.network.webview.adblock.AdBlock
@@ -32,6 +34,10 @@ abstract class BaseBrowserActivity : BaseActivity<ActivityBrowserBinding>(), Bro
 
 	@Inject
 	lateinit var adBlock: AdBlock
+
+	@Inject
+	@BaseHttpClient
+	lateinit var okHttpClient: OkHttpClient
 
 	private lateinit var onBackPressedCallback: WebViewBackPressedCallback
 
