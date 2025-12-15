@@ -31,7 +31,29 @@ open class ContinuationResumeWebViewClient(
 	}
 
 	protected fun resumeContinuation(view: WebView?) {
-		view?.webViewClient = WebViewClient() // reset to default
+		view?.webViewClient = ProxyWebViewClient(proxyProvider)
 		continuation.resume(Unit)
+	}
+
+	/**
+	 * A simple WebViewClient that supports proxy authentication
+	 */
+	private class ProxyWebViewClient(
+		private val proxyProvider: ProxyProvider?
+	) : WebViewClient() {
+
+		override fun onReceivedHttpAuthRequest(
+			view: WebView?,
+			handler: HttpAuthHandler?,
+			host: String?,
+			realm: String?
+		) {
+			val credentials = proxyProvider?.getProxyCredentials()
+			if (handler != null && credentials != null) {
+				handler.proceed(credentials.first, credentials.second)
+			} else {
+				super.onReceivedHttpAuthRequest(view, handler, host, realm)
+			}
+		}
 	}
 }
