@@ -101,7 +101,8 @@ class AppUpdateRepository @Inject constructor(
 
 	@Suppress("KotlinConstantConditions")
 	suspend fun isUpdateSupported(): Boolean {
-		return appValidator.isOriginalApp.getOrNull() == true
+		// Allow updates for debug builds (for testing) or original app (for production)
+		return BuildConfig.DEBUG || appValidator.isOriginalApp.getOrNull() == true
 	}
 
 	private inline fun JSONArray.find(predicate: (JSONObject) -> Boolean): JSONObject? {
