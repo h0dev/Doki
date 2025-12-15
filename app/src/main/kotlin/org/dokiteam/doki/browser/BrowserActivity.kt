@@ -24,7 +24,7 @@ class BrowserActivity : BaseBrowserActivity() {
 
 	override fun onCreate2(savedInstanceState: Bundle?, source: MangaSource, repository: ParserMangaRepository?) {
 		setDisplayHomeAsUp(isEnabled = true, showUpAsClose = true)
-		viewBinding.webView.webViewClient = BrowserClient(this, adBlock, proxyProvider)
+		viewBinding.webView.webViewClient = BrowserClient(this, adBlock, proxyProvider, okHttpClient)
 		lifecycleScope.launch {
 			try {
 				proxyProvider.applyWebViewConfig()

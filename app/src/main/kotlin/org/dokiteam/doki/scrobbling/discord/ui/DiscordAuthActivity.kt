@@ -22,7 +22,7 @@ class DiscordAuthActivity : BaseBrowserActivity(), DiscordTokenWebClient.Callbac
 	) {
 		setDisplayHomeAsUp(isEnabled = true, showUpAsClose = true)
 		viewBinding.webView.settings.userAgentString = USER_AGENT
-		viewBinding.webView.webViewClient = DiscordTokenWebClient(this, proxyProvider)
+		viewBinding.webView.webViewClient = DiscordTokenWebClient(this, proxyProvider, okHttpClient)
 		if (savedInstanceState == null) {
 			viewBinding.webView.loadUrl(BASE_URL)
 		}

@@ -123,6 +123,15 @@ class ProxyProvider @Inject constructor(
 		return login to password
 	}
 
+	/**
+	 * Check if WebView requests need to be intercepted for proxy authentication.
+	 * This is required for HTTP proxies with authentication because WebView doesn't
+	 * support proxy authentication natively (onReceivedHttpAuthRequest is for HTTP auth, not proxy auth).
+	 */
+	fun needsWebViewRequestInterception(): Boolean {
+		return settings.proxyType == Proxy.Type.HTTP && getProxyCredentials() != null
+	}
+
 	private fun getProxy(): Proxy {
 		val type = settings.proxyType
 		val address = settings.proxyAddress
