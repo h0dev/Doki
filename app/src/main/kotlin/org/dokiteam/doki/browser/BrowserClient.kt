@@ -120,17 +120,22 @@ open class BrowserClient(
 			val request = requestBuilder.build()
 			val response = client.newCall(request).execute()
 			
+			// Note: Response will be closed when WebView closes the input stream
 			// Convert OkHttp response to WebResourceResponse
-			val contentType = response.header("Content-Type")
-			val parts = contentType?.split(";")
-			val mimeType = parts?.getOrNull(0)?.trim() ?: "text/plain"
-			val encoding = parts?.find { it.trim().startsWith("charset=") }
-				?.substringAfter("charset=")?.trim() ?: "UTF-8"
+			val contentType = response.header("Content-Type") ?: "text/plain"
+			val parts = contentType.split(";").map { it.trim() }
+			val mimeType = parts.firstOrNull()?.takeIf { it.isNotEmpty() } ?: "text/plain"
+			val encoding = parts.asSequence()
+				.mapNotNull { part ->
+					if (part.startsWith("charset=", ignoreCase = true)) {
+						part.substringAfter("charset=", "").trim().takeIf { it.isNotEmpty() }
+					} else null
+				}
+				.firstOrNull() ?: "UTF-8"
 			
-			val responseHeaders = mutableMapOf<String, String>()
-			response.headers.forEach { (name, value) ->
-				responseHeaders[name] = value
-			}
+			val responseHeaders = response.headers.toMultimap()
+				.mapValues { (_, values) -> values.firstOrNull() ?: "" }
+				.filterValues { it.isNotEmpty() }
 			
 			WebResourceResponse(
 				mimeType,
