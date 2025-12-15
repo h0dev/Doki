@@ -51,6 +51,12 @@ class AppUpdateRepositoryTest {
 	}
 
 	@Test
+	fun testExtractVersionFromReleaseName_VersionWithUnderscore() {
+		val result = extractVersionFromReleaseName("Stable Release 2.0.1-beta_1")
+		assertEquals("2.0.1-beta_1", result)
+	}
+
+	@Test
 	fun testExtractVersionFromReleaseName_TwoPartVersion() {
 		val result = extractVersionFromReleaseName("Stable Release 2.0")
 		assertEquals("2.0", result)

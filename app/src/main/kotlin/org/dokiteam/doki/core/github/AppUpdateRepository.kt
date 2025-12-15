@@ -51,7 +51,7 @@ internal fun extractVersionFromReleaseName(name: String): String? {
 	
 	// Extract just the version part (e.g., "1.2.7-beta1" or "1.2.7")
 	// This handles cases where there might be additional text after the version
-	val versionPattern = Regex("""^(\d+\.\d+(?:\.\d+)?(?:-[a-zA-Z0-9]+)?)""")
+	val versionPattern = Regex("""^(\d+\.\d+(?:\.\d+)?(?:-[a-zA-Z0-9._]+)?)""")
 	val match = versionPattern.find(cleaned)
 	return match?.groupValues?.get(1)
 }
