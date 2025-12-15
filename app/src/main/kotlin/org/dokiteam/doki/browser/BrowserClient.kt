@@ -12,14 +12,18 @@ import androidx.annotation.AnyThread
 import androidx.annotation.WorkerThread
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.dokiteam.doki.core.network.proxy.ProxyProvider
 import org.dokiteam.doki.core.network.webview.adblock.AdBlock
+import org.dokiteam.doki.core.util.ext.printStackTraceDebug
 import java.io.ByteArrayInputStream
 
 open class BrowserClient(
 	private val callback: BrowserCallback,
 	private val adBlock: AdBlock?,
 	private val proxyProvider: ProxyProvider? = null,
+	private val okHttpClient: OkHttpClient? = null,
 ) : WebViewClient() {
 
 	/**
@@ -65,22 +69,83 @@ open class BrowserClient(
 	override fun shouldInterceptRequest(
 		view: WebView?,
 		url: String?
-	): WebResourceResponse? = if (url.isNullOrEmpty() || adBlock?.shouldLoadUrl(url, view?.getUrlSafe()) ?: true) {
-		super.shouldInterceptRequest(view, url)
-	} else {
-		emptyResponse()
+	): WebResourceResponse? {
+		if (url.isNullOrEmpty()) {
+			return super.shouldInterceptRequest(view, url)
+		}
+		if (adBlock?.shouldLoadUrl(url, view?.getUrlSafe()) == false) {
+			return emptyResponse()
+		}
+		// Use OkHttp for proxy authentication if proxy credentials are configured
+		if (shouldUseOkHttp()) {
+			return interceptWithOkHttp(url, emptyMap())
+		}
+		return super.shouldInterceptRequest(view, url)
 	}
 
 	@WorkerThread
 	override fun shouldInterceptRequest(
 		view: WebView?,
 		request: WebResourceRequest?
-	): WebResourceResponse? =
-		if (request == null || adBlock?.shouldLoadUrl(request.url.toString(), view?.getUrlSafe()) ?: true) {
-			super.shouldInterceptRequest(view, request)
-		} else {
-			emptyResponse()
+	): WebResourceResponse? {
+		if (request == null) {
+			return super.shouldInterceptRequest(view, request)
 		}
+		val url = request.url.toString()
+		if (adBlock?.shouldLoadUrl(url, view?.getUrlSafe()) == false) {
+			return emptyResponse()
+		}
+		// Use OkHttp for proxy authentication if proxy credentials are configured
+		if (shouldUseOkHttp()) {
+			val headers = request.requestHeaders ?: emptyMap()
+			return interceptWithOkHttp(url, headers)
+		}
+		return super.shouldInterceptRequest(view, request)
+	}
+
+	private fun shouldUseOkHttp(): Boolean {
+		// Only use OkHttp interception if we have both okHttpClient and proxy credentials
+		return okHttpClient != null && proxyProvider?.getProxyCredentials() != null
+	}
+
+	@WorkerThread
+	private fun interceptWithOkHttp(url: String, headers: Map<String, String>): WebResourceResponse? {
+		val client = okHttpClient ?: return null
+		
+		return try {
+			val requestBuilder = Request.Builder().url(url)
+			headers.forEach { (key, value) ->
+				requestBuilder.addHeader(key, value)
+			}
+			val request = requestBuilder.build()
+			val response = client.newCall(request).execute()
+			
+			// Convert OkHttp response to WebResourceResponse
+			val contentType = response.header("Content-Type")
+			val parts = contentType?.split(";")
+			val mimeType = parts?.getOrNull(0)?.trim() ?: "text/plain"
+			val encoding = parts?.find { it.trim().startsWith("charset=") }
+				?.substringAfter("charset=")?.trim() ?: "UTF-8"
+			
+			val responseHeaders = mutableMapOf<String, String>()
+			response.headers.forEach { (name, value) ->
+				responseHeaders[name] = value
+			}
+			
+			WebResourceResponse(
+				mimeType,
+				encoding,
+				response.code,
+				response.message.ifEmpty { "OK" },
+				responseHeaders,
+				response.body?.byteStream()
+			)
+		} catch (e: Exception) {
+			e.printStackTraceDebug()
+			// Fall back to default WebView handling on error
+			null
+		}
+	}
 
 	private fun emptyResponse(): WebResourceResponse =
 		WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(byteArrayOf()))

@@ -52,7 +52,7 @@ class CloudFlareActivity : BaseBrowserActivity(), CloudFlareCallback {
 			finishAfterTransition()
 			return
 		}
-		cfClient = CloudFlareClient(cookieJar, this, adBlock, url, proxyProvider)
+		cfClient = CloudFlareClient(cookieJar, this, adBlock, url, proxyProvider, okHttpClient)
 		viewBinding.webView.webViewClient = cfClient
 		lifecycleScope.launch {
 			try {
