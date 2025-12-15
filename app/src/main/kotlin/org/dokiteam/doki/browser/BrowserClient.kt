@@ -110,15 +110,13 @@ open class BrowserClient(
 
 	@WorkerThread
 	private fun interceptWithOkHttp(url: String, headers: Map<String, String>): WebResourceResponse? {
-		val client = okHttpClient ?: return null
-		
 		return try {
 			val requestBuilder = Request.Builder().url(url)
 			headers.forEach { (key, value) ->
 				requestBuilder.addHeader(key, value)
 			}
 			val request = requestBuilder.build()
-			val response = client.newCall(request).execute()
+			val response = okHttpClient!!.newCall(request).execute()
 			
 			// Note: Response will be closed when WebView closes the input stream
 			// Convert OkHttp response to WebResourceResponse
@@ -137,11 +135,22 @@ open class BrowserClient(
 				.mapValues { (_, values) -> values.firstOrNull() ?: "" }
 				.filterValues { it.isNotEmpty() }
 			
+			// Use the original message or provide a default based on response code
+			val reasonPhrase = response.message.ifEmpty {
+				when (response.code) {
+					in 200..299 -> "OK"
+					in 300..399 -> "Redirect"
+					in 400..499 -> "Client Error"
+					in 500..599 -> "Server Error"
+					else -> "Unknown"
+				}
+			}
+			
 			WebResourceResponse(
 				mimeType,
 				encoding,
 				response.code,
-				response.message.ifEmpty { "OK" },
+				reasonPhrase,
 				responseHeaders,
 				response.body?.byteStream()
 			)
