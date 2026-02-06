@@ -176,6 +176,19 @@ abstract class FavouritesDao : MangaQueryBuilder.ConditionCallback {
 		}
 	}
 
+	suspend fun delete(mangaId: Long) = setDeletedAt(mangaId, System.currentTimeMillis())
+
+	suspend fun delete(categoryId: Long, mangaId: Long) = setDeletedAt(categoryId, mangaId, System.currentTimeMillis())
+
+	suspend fun deleteAll(categoryId: Long) = setDeletedAtAll(categoryId, System.currentTimeMillis())
+
+	suspend fun recover(mangaId: Long) = setDeletedAt(mangaId, 0)
+
+	suspend fun recover(categoryId: Long, mangaId: Long) = setDeletedAt(categoryId, mangaId, 0)
+
+	@Query("DELETE FROM favourites WHERE deleted_at != 0 AND deleted_at < :maxDeletionTime")
+	abstract suspend fun gc(maxDeletionTime: Long)
+
 	/** DELETE **/
 
 	@Transaction

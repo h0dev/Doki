@@ -198,7 +198,7 @@ class FavouritesRepository @Inject constructor(
 		isTrackerEnabled: Boolean,
 		isVisibleOnShelf: Boolean,
 	) {
-		db.getFavouriteCategoriesDao().update(id, title, sortOrder.name, isTrackerEnabled, isVisibleOnShelf)
+		db.getFavouriteCategoriesDao().update(id, title, sortOrder.name, isTrackerEnabled, isVisibleOnShelf, System.currentTimeMillis())
 	}
 
 	suspend fun updateCategory(id: Long, isVisibleInLibrary: Boolean) {

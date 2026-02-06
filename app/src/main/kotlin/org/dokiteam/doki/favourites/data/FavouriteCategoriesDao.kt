@@ -78,10 +78,4 @@ abstract class FavouriteCategoriesDao {
 	protected abstract suspend fun setDeletedAt(id: Long, deletedAt: Long)
 }
 
-
-	@Upsert
-	abstract suspend fun upsert(entity: FavouriteCategoryEntity)
-
-	@Query("UPDATE favourite_categories SET deleted_at = :deletedAt WHERE category_id = :id")
-	protected abstract suspend fun setDeletedAt(id: Long, deletedAt: Long)
 }
