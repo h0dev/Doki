@@ -50,13 +50,13 @@ class BackupRepository @Inject constructor(
 	private val tapGridSettings: TapGridSettings,
 ) {
 
-	suspend fun hasChangesSince(since: Long): Boolean {
-		if (database.getHistoryDao().countChanges(since) > 0) return true
-		if (database.getFavouritesDao().countChanges(since) > 0) return true
-		if (database.getFavouriteCategoriesDao().countChanges(since) > 0) return true
-		if (database.getBookmarksDao().countChanges(since) > 0) return true
-		return false
-	}
+//	suspend fun hasChangesSince(since: Long): Boolean {
+//		if (database.getHistoryDao().countChanges(since) > 0) return true
+//		if (database.getFavouritesDao().countChanges(since) > 0) return true
+//		if (database.getFavouriteCategoriesDao().countChanges(since) > 0) return true
+//		if (database.getBookmarksDao().countChanges(since) > 0) return true
+//		return false
+//	}
 
 
 	private val json = Json {
