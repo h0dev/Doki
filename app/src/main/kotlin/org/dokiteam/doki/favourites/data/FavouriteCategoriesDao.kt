@@ -23,6 +23,9 @@ abstract class FavouriteCategoriesDao {
 	@Query("SELECT * FROM favourite_categories WHERE deleted_at = 0 AND show_in_lib = 1 ORDER BY sort_key")
 	abstract fun observeAllVisible(): Flow<List<FavouriteCategoryEntity>>
 
+	@Query("SELECT COUNT(*) FROM favourite_categories WHERE deleted_at != 0 OR updatedAt > :since")
+	abstract suspend fun countChanges(since: Long): Int
+
 	@Query("SELECT * FROM favourite_categories WHERE category_id = :id AND deleted_at = 0")
 	abstract fun observe(id: Long): Flow<FavouriteCategoryEntity?>
 
@@ -31,8 +34,19 @@ abstract class FavouriteCategoriesDao {
 
 	suspend fun delete(id: Long) = setDeletedAt(id, System.currentTimeMillis())
 
-	@Query("UPDATE favourite_categories SET title = :title, `order` = :order, `track` = :tracker, `show_in_lib` = :onShelf WHERE category_id = :id")
-	abstract suspend fun update(id: Long, title: String, order: String, tracker: Boolean, onShelf: Boolean)
+	@Query("UPDATE favourite_categories SET title = :title, `order` = :order, `track` = :tracker, `show_in_lib` = :onShelf, `updated_at` = :updatedAt WHERE category_id = :id")
+	abstract suspend fun update(id: Long, title: String, order: String, tracker: Boolean, onShelf: Boolean, updatedAt: Long)
+
+	@Transaction
+	open suspend fun upsert(entity: FavouriteCategoryEntity) {
+		val entityWithTimestamp = entity.copy(updatedAt = System.currentTimeMillis())
+		if (entityWithTimestamp.categoryId == 0) {
+			insert(entityWithTimestamp)
+		} else {
+			update(entityWithTimestamp.categoryId.toLong(), entityWithTimestamp.title, entityWithTimestamp.order, entityWithTimestamp.track, entityWithTimestamp.isVisibleInLibrary, entityWithTimestamp.updatedAt)
+		}
+	}
+
 
 	@Query("UPDATE favourite_categories SET `order` = :order WHERE category_id = :id")
 	abstract suspend fun updateOrder(id: Long, order: String)
@@ -59,9 +73,6 @@ abstract class FavouriteCategoriesDao {
 	suspend fun getNextSortKey(): Int {
 		return (getMaxSortKey() ?: 0) + 1
 	}
-
-	@Upsert
-	abstract suspend fun upsert(entity: FavouriteCategoryEntity)
 
 	@Query("UPDATE favourite_categories SET deleted_at = :deletedAt WHERE category_id = :id")
 	protected abstract suspend fun setDeletedAt(id: Long, deletedAt: Long)

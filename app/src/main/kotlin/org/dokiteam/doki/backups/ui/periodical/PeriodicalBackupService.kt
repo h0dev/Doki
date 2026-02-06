@@ -42,6 +42,9 @@ class PeriodicalBackupService : CoroutineIntentService() {
 		if (lastBackupDate != null && lastBackupDate.time + settings.periodicalBackupFrequencyMillis > System.currentTimeMillis()) {
 			return
 		}
+		if (lastBackupDate != null && !repository.hasChangesSince(lastBackupDate.time)) {
+			return
+		}
 		val output = BackupUtils.createTempFile(applicationContext)
 		try {
 			ZipOutputStream(output.outputStream()).use {

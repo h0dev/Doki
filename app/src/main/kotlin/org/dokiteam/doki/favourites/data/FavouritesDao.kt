@@ -119,6 +119,9 @@ abstract class FavouritesDao : MangaQueryBuilder.ConditionCallback {
 		return findCoversImpl(query)
 	}
 
+	@Query("SELECT COUNT(DISTINCT manga_id) FROM favourites WHERE deleted_at != 0 OR updatedAt > :since")
+	abstract suspend fun countChanges(since: Long): Int
+
 	@Query("SELECT COUNT(DISTINCT manga_id) FROM favourites WHERE deleted_at = 0")
 	abstract fun observeMangaCount(): Flow<Int>
 
@@ -161,42 +164,19 @@ abstract class FavouritesDao : MangaQueryBuilder.ConditionCallback {
 	@Insert(onConflict = OnConflictStrategy.REPLACE)
 	abstract suspend fun insert(favourite: FavouriteEntity)
 
+	@Query("UPDATE favourites SET sort_key = :sortKey, pinned = :isPinned, updated_at = :updatedAt WHERE manga_id = :mangaId AND category_id = :categoryId")
+	abstract suspend fun update(mangaId: Long, categoryId: Long, sortKey: Int, isPinned: Boolean, updatedAt: Long): Int
+
+	@Transaction
+	open suspend fun upsert(entity: FavouriteEntity) {
+		val entityWithTimestamp = entity.copy(updatedAt = System.currentTimeMillis())
+		val updatedRows = update(entityWithTimestamp.mangaId, entityWithTimestamp.categoryId, entityWithTimestamp.sortKey, entityWithTimestamp.isPinned, entityWithTimestamp.updatedAt)
+		if (updatedRows == 0) {
+			insert(entityWithTimestamp)
+		}
+	}
+
 	/** DELETE **/
-
-	suspend fun delete(mangaId: Long) = setDeletedAt(
-		mangaId = mangaId,
-		deletedAt = System.currentTimeMillis(),
-	)
-
-	suspend fun delete(mangaId: Long, categoryId: Long) = setDeletedAt(
-		categoryId = categoryId,
-		mangaId = mangaId,
-		deletedAt = System.currentTimeMillis(),
-	)
-
-	suspend fun deleteAll(categoryId: Long) = setDeletedAtAll(
-		categoryId = categoryId,
-		deletedAt = System.currentTimeMillis(),
-	)
-
-	suspend fun recover(mangaId: Long) = setDeletedAt(
-		mangaId = mangaId,
-		deletedAt = 0L,
-	)
-
-	suspend fun recover(categoryId: Long, mangaId: Long) = setDeletedAt(
-		categoryId = categoryId,
-		mangaId = mangaId,
-		deletedAt = 0L,
-	)
-
-	@Query("DELETE FROM favourites WHERE deleted_at != 0 AND deleted_at < :maxDeletionTime")
-	abstract suspend fun gc(maxDeletionTime: Long)
-
-	/** TOOLS **/
-
-	@Upsert
-	abstract suspend fun upsert(entity: FavouriteEntity)
 
 	@Transaction
 	@RawQuery(observedEntities = [FavouriteEntity::class])

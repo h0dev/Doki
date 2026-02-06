@@ -25,5 +25,6 @@ data class BookmarkEntity(
 	@ColumnInfo(name = "scroll") val scroll: Int,
 	@ColumnInfo(name = "image") val imageUrl: String,
 	@ColumnInfo(name = "created_at") val createdAt: Long,
+	@ColumnInfo(name = "updated_at") val updatedAt: Long,
 	@ColumnInfo(name = "percent") val percent: Float,
 )

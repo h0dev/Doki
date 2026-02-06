@@ -10,7 +10,7 @@
 		android:summary="@string/check_for_updates" />
 
 	<SwitchPreferenceCompat
-		android:defaultValue="false"
+		android:defaultValue="true"
 		android:key="updates_unstable"
 		android:summary="@string/allow_unstable_updates_summary"
 		android:title="@string/allow_unstable_updates" />
