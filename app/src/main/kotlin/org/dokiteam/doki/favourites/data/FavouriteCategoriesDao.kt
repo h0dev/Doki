@@ -6,7 +6,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RoomWarnings
 import androidx.room.Transaction
-import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -48,7 +47,6 @@ abstract class FavouriteCategoriesDao {
 		}
 	}
 
-
 	@Query("UPDATE favourite_categories SET `order` = :order WHERE category_id = :id")
 	abstract suspend fun updateOrder(id: Long, order: String)
 
@@ -74,6 +72,14 @@ abstract class FavouriteCategoriesDao {
 	suspend fun getNextSortKey(): Int {
 		return (getMaxSortKey() ?: 0) + 1
 	}
+
+	@Query("UPDATE favourite_categories SET deleted_at = :deletedAt WHERE category_id = :id")
+	protected abstract suspend fun setDeletedAt(id: Long, deletedAt: Long)
+}
+
+
+	@Upsert
+	abstract suspend fun upsert(entity: FavouriteCategoryEntity)
 
 	@Query("UPDATE favourite_categories SET deleted_at = :deletedAt WHERE category_id = :id")
 	protected abstract suspend fun setDeletedAt(id: Long, deletedAt: Long)
