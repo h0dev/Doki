@@ -102,7 +102,7 @@ class AppUpdateRepository @Inject constructor(
 
 	@Suppress("KotlinConstantConditions")
 	suspend fun isUpdateSupported(): Boolean {
-		return appValidator.isOriginalApp.getOrNull() == true
+		return true
 	}
 
 	private inline fun JSONArray.find(predicate: (JSONObject) -> Boolean): JSONObject? {
