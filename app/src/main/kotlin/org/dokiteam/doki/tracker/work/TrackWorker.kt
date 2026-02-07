@@ -339,7 +339,7 @@ class TrackWorker @AssistedInject constructor(
 		const val TAG = "tracking"
 		const val TAG_ONESHOT = "tracking_oneshot"
 		const val MAX_PARALLELISM = 6
-		val BATCH_SIZE = if (BuildConfig.DEBUG) 20 else 46
+		val BATCH_SIZE = if (BuildConfig.DEBUG) 20 else 92
 		const val SETTINGS_ACTION_CODE = 5
 	}
 }

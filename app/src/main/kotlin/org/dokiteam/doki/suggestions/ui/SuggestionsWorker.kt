@@ -215,8 +215,9 @@ class SuggestionsWorker @AssistedInject constructor(
 			.sortedBy { it.relevance }
 			.take(MAX_RESULTS)
 		suggestionRepository.replace(suggestions)
-		if (appSettings.isSuggestionsNotificationAvailable
-			&& applicationContext.checkNotificationPermission(MANGA_CHANNEL_ID)
+		if (appSettings.isSuggestionsNotificationAvailable &&
+			applicationContext.checkNotificationPermission(MANGA_CHANNEL_ID) &&
+			suggestions.size >= 3
 		) {
 			for (i in 0..3) {
 				try {
