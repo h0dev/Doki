@@ -23,7 +23,7 @@ abstract class FavouriteCategoriesDao {
 	@Query("SELECT * FROM favourite_categories WHERE deleted_at = 0 AND show_in_lib = 1 ORDER BY sort_key")
 	abstract fun observeAllVisible(): Flow<List<FavouriteCategoryEntity>>
 
-	@Query("SELECT COUNT(*) FROM favourite_categories WHERE deleted_at != 0 OR updatedAt > :since")
+	@Query("SELECT COUNT(*) FROM favourite_categories WHERE deleted_at != 0 OR updated_at > :since")
 	abstract suspend fun countChanges(since: Long): Int
 
 	@Query("SELECT * FROM favourite_categories WHERE category_id = :id AND deleted_at = 0")

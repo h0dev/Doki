@@ -30,7 +30,7 @@ abstract class BookmarksDao {
 	@Query("SELECT * FROM bookmarks WHERE manga_id = :mangaId ORDER BY percent")
 	abstract fun observe(mangaId: Long): Flow<List<BookmarkEntity>>
 
-	@Query("SELECT COUNT(*) FROM bookmarks WHERE updatedAt > :since")
+	@Query("SELECT COUNT(*) FROM bookmarks WHERE updated_at > :since")
 	abstract suspend fun countChanges(since: Long): Int
 
 	@Transaction

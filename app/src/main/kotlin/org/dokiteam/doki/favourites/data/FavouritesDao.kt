@@ -119,7 +119,7 @@ abstract class FavouritesDao : MangaQueryBuilder.ConditionCallback {
 		return findCoversImpl(query)
 	}
 
-	@Query("SELECT COUNT(DISTINCT manga_id) FROM favourites WHERE deleted_at != 0 OR updatedAt > :since")
+	@Query("SELECT COUNT(DISTINCT manga_id) FROM favourites WHERE deleted_at != 0 OR updated_at > :since")
 	abstract suspend fun countChanges(since: Long): Int
 
 	@Query("SELECT COUNT(DISTINCT manga_id) FROM favourites WHERE deleted_at = 0")
