@@ -119,10 +119,13 @@ class ProxySettingsFragment : BasePreferenceFragment(R.string.proxy),
 				isEnabled = false
 			}
 			try {
+				val proxyType = settings.proxyType
+				val isSocks = proxyType == Proxy.Type.SOCKS
+				
 				val proxyTestClient = okHttpClient.newBuilder()
-					.connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
-					.readTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
-					.writeTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+					.connectTimeout(if (isSocks) 8 else 10, java.util.concurrent.TimeUnit.SECONDS)
+					.readTimeout(if (isSocks) 10 else 15, java.util.concurrent.TimeUnit.SECONDS)
+					.writeTimeout(if (isSocks) 10 else 15, java.util.concurrent.TimeUnit.SECONDS)
 					.build()
 
 				withContext(Dispatchers.Default) {
@@ -176,7 +179,8 @@ class ProxySettingsFragment : BasePreferenceFragment(R.string.proxy),
 			} catch (e: java.io.IOException) {
 				if (e.message?.contains("SOCKS", ignoreCase = true) == true ||
 					e.message?.contains("connection", ignoreCase = true) == true ||
-					e.message?.contains("reset", ignoreCase = true) == true) {
+					e.message?.contains("reset", ignoreCase = true) == true ||
+					e.message?.contains("handshake", ignoreCase = true) == true) {
 					e.printStackTraceDebug()
 					showTestResult(Exception("${getString(R.string.proxy_connection_failed)}: ${e.message}"))
 				} else {
@@ -187,13 +191,19 @@ class ProxySettingsFragment : BasePreferenceFragment(R.string.proxy),
 				e.printStackTraceDebug()
 				showTestResult(Exception("${getString(R.string.proxy_ssl_error)}: ${e.message}"))
 			} catch (e: java.lang.RuntimeException) {
-				if (e.message?.contains("SOCKS", ignoreCase = true) == true) {
+				if (e.message?.contains("SOCKS", ignoreCase = true) == true ||
+					e.message?.contains("authentication", ignoreCase = true) == true) {
 					e.printStackTraceDebug()
 					showTestResult(Exception("${getString(R.string.proxy_connection_failed)}: ${e.message}"))
 				} else {
 					e.printStackTraceDebug()
 					throw e
 				}
+			} catch (e: java.util.concurrent.TimeoutException) {
+				e.printStackTraceDebug()
+				showTestResult(Exception("${getString(R.string.proxy_timeout)}: ${e.message}"))
+			} catch (e: java.util.concurrent.CancellationException) {
+				e.printStackTraceDebug()
 			} catch (e: Throwable) {
 				e.printStackTraceDebug()
 				showTestResult(e)
