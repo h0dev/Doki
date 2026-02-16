@@ -11,8 +11,10 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.dokiteam.doki.R
@@ -119,83 +121,47 @@ class ProxySettingsFragment : BasePreferenceFragment(R.string.proxy),
 				isEnabled = false
 			}
 			try {
-				withContext(Dispatchers.Default) {
-					coroutineScope {
-						val timeoutJob = launch {
-							delay((if (settings.proxyType == Proxy.Type.SOCKS) 15000L else 25000L))
-							throw java.net.SocketTimeoutException("Proxy test timed out")
-						}
-						
-						try {
-							val proxyType = settings.proxyType
-							val isSocks = proxyType == Proxy.Type.SOCKS
-							
-							val shortConnectTimeout = if (isSocks) 5 else 10
-							val shortReadTimeout = if (isSocks) 8 else 15
-							val shortWriteTimeout = if (isSocks) 8 else 15
-							
-							val proxyTestClient = okHttpClient.newBuilder()
-								.connectTimeout(shortConnectTimeout, java.util.concurrent.TimeUnit.SECONDS)
-								.readTimeout(shortReadTimeout, java.util.concurrent.TimeUnit.SECONDS)
-								.writeTimeout(shortWriteTimeout, java.util.concurrent.TimeUnit.SECONDS)
-								.build()
+				val proxyType = settings.proxyType
+				val isSocks = proxyType == Proxy.Type.SOCKS
+				
+				val shortConnectTimeout = if (isSocks) 5L else 10L
+				val shortReadTimeout = if (isSocks) 8L else 15L
+				val shortWriteTimeout = if (isSocks) 8L else 15L
+				
+				val timeoutMs = if (isSocks) 15000L else 25000L
+				
+				val proxyTestClient = okHttpClient.newBuilder()
+					.connectTimeout(shortConnectTimeout, java.util.concurrent.TimeUnit.SECONDS)
+					.readTimeout(shortReadTimeout, java.util.concurrent.TimeUnit.SECONDS)
+					.writeTimeout(shortWriteTimeout, java.util.concurrent.TimeUnit.SECONDS)
+					.build()
 
-							try {
-								val request = Request.Builder()
-									.get()
-									.url("https://httpbin.org/ip")
-									.build()
-								
-								runCatching {
-									proxyTestClient.newCall(request).await()
-								}.fold(
-									onSuccess = { response ->
-										response.use { resp ->
-											if (!resp.isSuccessful) {
-												when (resp.code) {
-													407 -> throw Exception(getString(R.string.proxy_authentication_required))
-													403, 401 -> throw Exception(getString(R.string.proxy_access_denied))
-													502, 503 -> throw Exception(getString(R.string.proxy_unavailable))
-													else -> throw Exception("${getString(R.string.error_request_failed)}: ${resp.code} ${resp.message}")
-												}
-											}
-											val responseBody = resp.body?.string()
-											if (responseBody.isNullOrEmpty()) {
-												throw Exception(getString(R.string.error_empty_response))
-											}
-										}
-									},
-									onFailure = { error ->
-										throw error
-									}
-								)
-							} catch (e: java.net.SocketTimeoutException) {
-								throw e
-							} catch (e: java.net.ConnectException) {
-								throw e
-							} catch (e: java.net.UnknownHostException) {
-								throw e
-							} catch (e: javax.net.ssl.SSLException) {
-								throw e
-							} catch (e: java.net.SocketException) {
-								throw e
-							} catch (e: java.io.IOException) {
-								throw e
-							} catch (e: java.lang.SecurityException) {
-								throw e
-							} catch (e: java.lang.RuntimeException) {
-								throw e
-							} catch (e: java.util.concurrent.TimeoutException) {
-								throw e
-							} catch (t: Throwable) {
-								throw Exception("Proxy connection failed: ${t.message}", t)
+				withContext(Dispatchers.Default) {
+					withTimeout(timeoutMs) {
+						val request = Request.Builder()
+							.get()
+							.url("https://httpbin.org/ip")
+							.build()
+						proxyTestClient.newCall(request).await().use { response ->
+							if (!response.isSuccessful) {
+								when (response.code) {
+									407 -> throw Exception(getString(R.string.proxy_authentication_required))
+									403, 401 -> throw Exception(getString(R.string.proxy_access_denied))
+									502, 503 -> throw Exception(getString(R.string.proxy_unavailable))
+									else -> throw Exception("${getString(R.string.error_request_failed)}: ${response.code} ${response.message}")
+								}
 							}
-						} finally {
-							timeoutJob.cancel()
+							val responseBody = response.body?.string()
+							if (responseBody.isNullOrEmpty()) {
+								throw Exception(getString(R.string.error_empty_response))
+							}
 						}
 					}
 				}
 				showTestResult(null)
+			} catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+				e.printStackTraceDebug()
+				showTestResult(Exception("${getString(R.string.proxy_timeout)}: ${e.message}"))
 			} catch (e: CancellationException) {
 				throw e
 			} catch (e: java.net.SocketTimeoutException) {
