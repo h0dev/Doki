@@ -27,6 +27,7 @@ import org.dokiteam.doki.settings.utils.EditTextBindListener
 import org.dokiteam.doki.settings.utils.PasswordSummaryProvider
 import org.dokiteam.doki.settings.utils.validation.DomainValidator
 import org.dokiteam.doki.settings.utils.validation.PortNumberValidator
+import java.io.IOException
 import java.net.Proxy
 import java.net.SocketException
 import javax.inject.Inject
@@ -160,10 +161,37 @@ class ProxySettingsFragment : BasePreferenceFragment(R.string.proxy),
 				e.printStackTraceDebug()
 				showTestResult(Exception("${getString(R.string.proxy_ssl_error)}: ${e.message}"))
 			} catch (e: java.net.SocketException) {
-				if (e.message?.contains("proxy", ignoreCase = true) == true) {
+				when {
+					e.message?.contains("proxy", ignoreCase = true) == true ||
+					e.message?.contains("SOCKS", ignoreCase = true) == true ||
+					e.message?.contains("socks", ignoreCase = true) == true -> {
+						e.printStackTraceDebug()
+						showTestResult(Exception("${getString(R.string.proxy_connection_failed)}: ${e.message}"))
+					}
+					else -> {
+						e.printStackTraceDebug()
+						throw e
+					}
+				}
+			} catch (e: java.io.IOException) {
+				if (e.message?.contains("SOCKS", ignoreCase = true) == true ||
+					e.message?.contains("connection", ignoreCase = true) == true ||
+					e.message?.contains("reset", ignoreCase = true) == true) {
 					e.printStackTraceDebug()
 					showTestResult(Exception("${getString(R.string.proxy_connection_failed)}: ${e.message}"))
 				} else {
+					e.printStackTraceDebug()
+					throw e
+				}
+			} catch (e: java.lang.SecurityException) {
+				e.printStackTraceDebug()
+				showTestResult(Exception("${getString(R.string.proxy_ssl_error)}: ${e.message}"))
+			} catch (e: java.lang.RuntimeException) {
+				if (e.message?.contains("SOCKS", ignoreCase = true) == true) {
+					e.printStackTraceDebug()
+					showTestResult(Exception("${getString(R.string.proxy_connection_failed)}: ${e.message}"))
+				} else {
+					e.printStackTraceDebug()
 					throw e
 				}
 			} catch (e: Throwable) {
