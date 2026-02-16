@@ -28,6 +28,7 @@ import org.dokiteam.doki.settings.utils.PasswordSummaryProvider
 import org.dokiteam.doki.settings.utils.validation.DomainValidator
 import org.dokiteam.doki.settings.utils.validation.PortNumberValidator
 import java.net.Proxy
+import java.net.SocketException
 import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -158,9 +159,13 @@ class ProxySettingsFragment : BasePreferenceFragment(R.string.proxy),
 			} catch (e: javax.net.ssl.SSLException) {
 				e.printStackTraceDebug()
 				showTestResult(Exception("${getString(R.string.proxy_ssl_error)}: ${e.message}"))
-			} catch (e: java.net.ProxyConnectException) {
-				e.printStackTraceDebug()
-				showTestResult(Exception("${getString(R.string.proxy_connection_failed)}: ${e.message}"))
+			} catch (e: java.net.SocketException) {
+				if (e.message?.contains("proxy", ignoreCase = true) == true) {
+					e.printStackTraceDebug()
+					showTestResult(Exception("${getString(R.string.proxy_connection_failed)}: ${e.message}"))
+				} else {
+					throw e
+				}
 			} catch (e: Throwable) {
 				e.printStackTraceDebug()
 				showTestResult(e)
