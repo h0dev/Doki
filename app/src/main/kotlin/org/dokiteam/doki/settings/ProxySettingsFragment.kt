@@ -119,32 +119,79 @@ class ProxySettingsFragment : BasePreferenceFragment(R.string.proxy),
 				isEnabled = false
 			}
 			try {
-				val proxyType = settings.proxyType
-				val isSocks = proxyType == Proxy.Type.SOCKS
-				
-				val proxyTestClient = okHttpClient.newBuilder()
-					.connectTimeout(if (isSocks) 8 else 10, java.util.concurrent.TimeUnit.SECONDS)
-					.readTimeout(if (isSocks) 10 else 15, java.util.concurrent.TimeUnit.SECONDS)
-					.writeTimeout(if (isSocks) 10 else 15, java.util.concurrent.TimeUnit.SECONDS)
-					.build()
-
 				withContext(Dispatchers.Default) {
-					val request = Request.Builder()
-						.get()
-						.url("https://httpbin.org/ip")
-						.build()
-					proxyTestClient.newCall(request).await().use { response ->
-						if (!response.isSuccessful) {
-							when (response.code) {
-								407 -> throw Exception(getString(R.string.proxy_authentication_required))
-								403, 401 -> throw Exception(getString(R.string.proxy_access_denied))
-								502, 503 -> throw Exception(getString(R.string.proxy_unavailable))
-								else -> throw Exception("${getString(R.string.error_request_failed)}: ${response.code} ${response.message}")
-							}
+					coroutineScope {
+						val timeoutJob = launch {
+							delay((if (settings.proxyType == Proxy.Type.SOCKS) 15000L else 25000L))
+							throw java.net.SocketTimeoutException("Proxy test timed out")
 						}
-						val responseBody = response.body?.string()
-						if (responseBody.isNullOrEmpty()) {
-							throw Exception(getString(R.string.error_empty_response))
+						
+						try {
+							val proxyType = settings.proxyType
+							val isSocks = proxyType == Proxy.Type.SOCKS
+							
+							val shortConnectTimeout = if (isSocks) 5 else 10
+							val shortReadTimeout = if (isSocks) 8 else 15
+							val shortWriteTimeout = if (isSocks) 8 else 15
+							
+							val proxyTestClient = okHttpClient.newBuilder()
+								.connectTimeout(shortConnectTimeout, java.util.concurrent.TimeUnit.SECONDS)
+								.readTimeout(shortReadTimeout, java.util.concurrent.TimeUnit.SECONDS)
+								.writeTimeout(shortWriteTimeout, java.util.concurrent.TimeUnit.SECONDS)
+								.build()
+
+							try {
+								val request = Request.Builder()
+									.get()
+									.url("https://httpbin.org/ip")
+									.build()
+								
+								runCatching {
+									proxyTestClient.newCall(request).await()
+								}.fold(
+									onSuccess = { response ->
+										response.use { resp ->
+											if (!resp.isSuccessful) {
+												when (resp.code) {
+													407 -> throw Exception(getString(R.string.proxy_authentication_required))
+													403, 401 -> throw Exception(getString(R.string.proxy_access_denied))
+													502, 503 -> throw Exception(getString(R.string.proxy_unavailable))
+													else -> throw Exception("${getString(R.string.error_request_failed)}: ${resp.code} ${resp.message}")
+												}
+											}
+											val responseBody = resp.body?.string()
+											if (responseBody.isNullOrEmpty()) {
+												throw Exception(getString(R.string.error_empty_response))
+											}
+										}
+									},
+									onFailure = { error ->
+										throw error
+									}
+								)
+							} catch (e: java.net.SocketTimeoutException) {
+								throw e
+							} catch (e: java.net.ConnectException) {
+								throw e
+							} catch (e: java.net.UnknownHostException) {
+								throw e
+							} catch (e: javax.net.ssl.SSLException) {
+								throw e
+							} catch (e: java.net.SocketException) {
+								throw e
+							} catch (e: java.io.IOException) {
+								throw e
+							} catch (e: java.lang.SecurityException) {
+								throw e
+							} catch (e: java.lang.RuntimeException) {
+								throw e
+							} catch (e: java.util.concurrent.TimeoutException) {
+								throw e
+							} catch (t: Throwable) {
+								throw Exception("Proxy connection failed: ${t.message}", t)
+							}
+						} finally {
+							timeoutJob.cancel()
 						}
 					}
 				}
@@ -180,7 +227,8 @@ class ProxySettingsFragment : BasePreferenceFragment(R.string.proxy),
 				if (e.message?.contains("SOCKS", ignoreCase = true) == true ||
 					e.message?.contains("connection", ignoreCase = true) == true ||
 					e.message?.contains("reset", ignoreCase = true) == true ||
-					e.message?.contains("handshake", ignoreCase = true) == true) {
+					e.message?.contains("handshake", ignoreCase = true) == true ||
+					e.message?.contains("authentication", ignoreCase = true) == true) {
 					e.printStackTraceDebug()
 					showTestResult(Exception("${getString(R.string.proxy_connection_failed)}: ${e.message}"))
 				} else {
@@ -192,7 +240,9 @@ class ProxySettingsFragment : BasePreferenceFragment(R.string.proxy),
 				showTestResult(Exception("${getString(R.string.proxy_ssl_error)}: ${e.message}"))
 			} catch (e: java.lang.RuntimeException) {
 				if (e.message?.contains("SOCKS", ignoreCase = true) == true ||
-					e.message?.contains("authentication", ignoreCase = true) == true) {
+					e.message?.contains("authentication", ignoreCase = true) == true ||
+					e.message?.contains("handshake", ignoreCase = true) == true ||
+					e.message?.contains("proxy", ignoreCase = true) == true) {
 					e.printStackTraceDebug()
 					showTestResult(Exception("${getString(R.string.proxy_connection_failed)}: ${e.message}"))
 				} else {
@@ -206,7 +256,7 @@ class ProxySettingsFragment : BasePreferenceFragment(R.string.proxy),
 				e.printStackTraceDebug()
 			} catch (e: Throwable) {
 				e.printStackTraceDebug()
-				showTestResult(e)
+				showTestResult(Exception("Proxy connection failed: ${e.message}"))
 			} finally {
 				pref?.run {
 					isEnabled = true
