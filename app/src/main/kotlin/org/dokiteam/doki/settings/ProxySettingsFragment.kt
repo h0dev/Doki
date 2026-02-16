@@ -117,18 +117,50 @@ class ProxySettingsFragment : BasePreferenceFragment(R.string.proxy),
 				isEnabled = false
 			}
 			try {
+				val proxyTestClient = okHttpClient.newBuilder()
+					.connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+					.readTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+					.writeTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+					.build()
+
 				withContext(Dispatchers.Default) {
 					val request = Request.Builder()
 						.get()
-						.url("http://neverssl.com")
+						.url("https://httpbin.org/ip")
 						.build()
-					okHttpClient.newCall(request).await().use { response ->
-						check(response.isSuccessful) { response.message }
+					proxyTestClient.newCall(request).await().use { response ->
+						if (!response.isSuccessful) {
+							when (response.code) {
+								407 -> throw Exception(getString(R.string.proxy_authentication_required))
+								403, 401 -> throw Exception(getString(R.string.proxy_access_denied))
+								502, 503 -> throw Exception(getString(R.string.proxy_unavailable))
+								else -> throw Exception("${getString(R.string.error_request_failed)}: ${response.code} ${response.message}")
+							}
+						}
+						val responseBody = response.body?.string()
+						if (responseBody.isNullOrEmpty()) {
+							throw Exception(getString(R.string.error_empty_response))
+						}
 					}
 				}
 				showTestResult(null)
 			} catch (e: CancellationException) {
 				throw e
+			} catch (e: java.net.SocketTimeoutException) {
+				e.printStackTraceDebug()
+				showTestResult(Exception("${getString(R.string.proxy_timeout)}: ${e.message}"))
+			} catch (e: java.net.ConnectException) {
+				e.printStackTraceDebug()
+				showTestResult(Exception("${getString(R.string.proxy_connection_failed)}: ${e.message}"))
+			} catch (e: java.net.UnknownHostException) {
+				e.printStackTraceDebug()
+				showTestResult(Exception("${getString(R.string.proxy_unknown_host)}: ${e.message}"))
+			} catch (e: javax.net.ssl.SSLException) {
+				e.printStackTraceDebug()
+				showTestResult(Exception("${getString(R.string.proxy_ssl_error)}: ${e.message}"))
+			} catch (e: java.net.ProxyConnectException) {
+				e.printStackTraceDebug()
+				showTestResult(Exception("${getString(R.string.proxy_connection_failed)}: ${e.message}"))
 			} catch (e: Throwable) {
 				e.printStackTraceDebug()
 				showTestResult(e)

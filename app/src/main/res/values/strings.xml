@@ -910,4 +910,13 @@
     <string name="download_default_directory">Default directory for downloading manga</string>
     <string name="private_app_directory_warning">This directory with all data will be deleted if you uninstall the application</string>
     <string name="available_pattern">%1$s available</string>
+    <string name="proxy_authentication_required">Proxy authentication required</string>
+    <string name="proxy_access_denied">Proxy access denied</string>
+    <string name="proxy_unavailable">Proxy unavailable</string>
+    <string name="proxy_timeout">Proxy connection timeout</string>
+    <string name="proxy_connection_failed">Proxy connection failed</string>
+    <string name="proxy_unknown_host">Proxy unknown host</string>
+    <string name="proxy_ssl_error">Proxy SSL error</string>
+    <string name="error_empty_response">Empty response received</string>
+    <string name="error_request_failed">Request failed</string>
 </resources>
