@@ -14,7 +14,7 @@
 
         <Preference
             android:key="logcat_copy"
-            android:icon="@drawable/ic_content_copy"
+            android:icon="@drawable/ic_script"
             android:title="@string/copy_log"
             android:summary="@string/copy_log_summary" />
 
