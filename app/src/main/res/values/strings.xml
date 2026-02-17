@@ -738,9 +738,6 @@
     <string name="popular_today">Popular today</string>
     <string name="popular_in_week">Popular this week</string>
     <string name="popular_in_month">Popular this month</string>
-    <string name="url_error_report">https://your-error-report-url.com</string>
-    <string name="acra_login">your_acra_username</string>
-    <string name="acra_password">your_acra_password</string>
     <string name="popular_in_year">Popular this year</string>
     <string name="original_language">Original language</string>
     <string name="year">Year</string>
