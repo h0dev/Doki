@@ -31,7 +31,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class DebugSettingsFragment : BasePreferenceFragment(R.string.debug), Preference.OnPreferenceChangeListener {
+class DebugSettingsFragment : BasePreferenceFragment(R.string.debug), Preference.OnPreferenceChangeListener, Preference.OnPreferenceClickListener {
 
 	private val application
 		get() = requireContext().applicationContext as DokiApp
@@ -89,8 +89,7 @@ class DebugSettingsFragment : BasePreferenceFragment(R.string.debug), Preference
 	}
 
 	private fun setupLogcatToolbar() {
-		val listView = view?.findViewById<androidx.recyclerview.widget.RecyclerView>(androidx.preference.R.id.recyclerview)
-		val container = listView?.parent as? ViewGroup
+		val container = this.recyclerView?.parent as? ViewGroup
 
 		val toolbarLayout = LinearLayout(requireContext()).apply {
 			orientation = LinearLayout.HORIZONTAL
@@ -299,7 +298,7 @@ class DebugSettingsFragment : BasePreferenceFragment(R.string.debug), Preference
 			true
 		}
 
-		else -> super.onPreferenceChange(preference, newValue)
+		else -> false
 	}
 
 	override fun onPreferenceClick(preference: Preference): Boolean = when (preference.key) {
@@ -308,7 +307,7 @@ class DebugSettingsFragment : BasePreferenceFragment(R.string.debug), Preference
 			true
 		}
 
-		else -> super.onPreferenceClick(preference)
+		else -> false
 	}
 
 	private companion object {
