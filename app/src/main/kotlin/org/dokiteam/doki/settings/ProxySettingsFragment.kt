@@ -121,105 +121,128 @@ class ProxySettingsFragment : BasePreferenceFragment(R.string.proxy),
 				isEnabled = false
 			}
 			try {
-				val proxyType = settings.proxyType
-				val isSocks = proxyType == Proxy.Type.SOCKS
-				
-				val shortConnectTimeout = if (isSocks) 5L else 10L
-				val shortReadTimeout = if (isSocks) 8L else 15L
-				val shortWriteTimeout = if (isSocks) 8L else 15L
-				
-				val timeoutMs = if (isSocks) 15000L else 25000L
-				
-				val proxyTestClient = okHttpClient.newBuilder()
-					.connectTimeout(shortConnectTimeout, java.util.concurrent.TimeUnit.SECONDS)
-					.readTimeout(shortReadTimeout, java.util.concurrent.TimeUnit.SECONDS)
-					.writeTimeout(shortWriteTimeout, java.util.concurrent.TimeUnit.SECONDS)
-					.build()
-
-				withContext(Dispatchers.Default) {
-					withTimeout(timeoutMs) {
-						val request = Request.Builder()
-							.get()
-							.url("https://httpbin.org/ip")
+				val result = withContext(Dispatchers.Default) {
+					try {
+						val proxyType = settings.proxyType
+						val isSocks = proxyType == Proxy.Type.SOCKS
+						
+						val shortConnectTimeout = if (isSocks) 5L else 10L
+						val shortReadTimeout = if (isSocks) 8L else 15L
+						val shortWriteTimeout = if (isSocks) 8L else 15L
+						
+						val timeoutMs = if (isSocks) 15000L else 25000L
+						
+						val proxyTestClient = okHttpClient.newBuilder()
+							.connectTimeout(shortConnectTimeout, java.util.concurrent.TimeUnit.SECONDS)
+							.readTimeout(shortReadTimeout, java.util.concurrent.TimeUnit.SECONDS)
+							.writeTimeout(shortWriteTimeout, java.util.concurrent.TimeUnit.SECONDS)
 							.build()
-						proxyTestClient.newCall(request).await().use { response ->
-							if (!response.isSuccessful) {
-								when (response.code) {
-									407 -> throw Exception(getString(R.string.proxy_authentication_required))
-									403, 401 -> throw Exception(getString(R.string.proxy_access_denied))
-									502, 503 -> throw Exception(getString(R.string.proxy_unavailable))
-									else -> throw Exception("${getString(R.string.error_request_failed)}: ${response.code} ${response.message}")
+
+						withTimeout(timeoutMs) {
+							val request = Request.Builder()
+								.get()
+								.url("https://httpbin.org/ip")
+								.build()
+							proxyTestClient.newCall(request).await().use { response ->
+								if (!response.isSuccessful) {
+									when (response.code) {
+										407 -> throw Exception(getString(R.string.proxy_authentication_required))
+										403, 401 -> throw Exception(getString(R.string.proxy_access_denied))
+										502, 503 -> throw Exception(getString(R.string.proxy_unavailable))
+										else -> throw Exception("${getString(R.string.error_request_failed)}: ${response.code} ${response.message}")
+									}
+								}
+								val responseBody = response.body?.string()
+								if (responseBody.isNullOrEmpty()) {
+									throw Exception(getString(R.string.error_empty_response))
 								}
 							}
-							val responseBody = response.body?.string()
-							if (responseBody.isNullOrEmpty()) {
-								throw Exception(getString(R.string.error_empty_response))
+						}
+						null
+					} catch (e: Throwable) {
+						e
+					}
+				}
+				
+				if (result != null) {
+					when (result) {
+						is kotlinx.coroutines.TimeoutCancellationException -> {
+							result.printStackTraceDebug()
+							showTestResult(Exception("${getString(R.string.proxy_timeout)}: ${result.message}"))
+						}
+						is java.net.SocketTimeoutException -> {
+							result.printStackTraceDebug()
+							showTestResult(Exception("${getString(R.string.proxy_timeout)}: ${result.message}"))
+						}
+						is java.net.ConnectException -> {
+							result.printStackTraceDebug()
+							showTestResult(Exception("${getString(R.string.proxy_connection_failed)}: ${result.message}"))
+						}
+						is java.net.UnknownHostException -> {
+							result.printStackTraceDebug()
+							showTestResult(Exception("${getString(R.string.proxy_unknown_host)}: ${result.message}"))
+						}
+						is javax.net.ssl.SSLException -> {
+							result.printStackTraceDebug()
+							showTestResult(Exception("${getString(R.string.proxy_ssl_error)}: ${result.message}"))
+						}
+						is java.net.SocketException -> {
+							when {
+								result.message?.contains("proxy", ignoreCase = true) == true ||
+								result.message?.contains("SOCKS", ignoreCase = true) == true ||
+								result.message?.contains("socks", ignoreCase = true) == true -> {
+									result.printStackTraceDebug()
+									showTestResult(Exception("${getString(R.string.proxy_connection_failed)}: ${result.message}"))
+								}
+								else -> {
+									result.printStackTraceDebug()
+									throw result
+								}
 							}
 						}
+						is java.io.IOException -> {
+							if (result.message?.contains("SOCKS", ignoreCase = true) == true ||
+								result.message?.contains("connection", ignoreCase = true) == true ||
+								result.message?.contains("reset", ignoreCase = true) == true ||
+								result.message?.contains("handshake", ignoreCase = true) == true ||
+								result.message?.contains("authentication", ignoreCase = true) == true) {
+								result.printStackTraceDebug()
+								showTestResult(Exception("${getString(R.string.proxy_connection_failed)}: ${result.message}"))
+							} else {
+								result.printStackTraceDebug()
+								throw result
+							}
+						}
+						is java.lang.SecurityException -> {
+							result.printStackTraceDebug()
+							showTestResult(Exception("${getString(R.string.proxy_ssl_error)}: ${result.message}"))
+						}
+						is java.lang.RuntimeException -> {
+							if (result.message?.contains("SOCKS", ignoreCase = true) == true ||
+								result.message?.contains("authentication", ignoreCase = true) == true ||
+								result.message?.contains("handshake", ignoreCase = true) == true ||
+								result.message?.contains("proxy", ignoreCase = true) == true) {
+								result.printStackTraceDebug()
+								showTestResult(Exception("${getString(R.string.proxy_connection_failed)}: ${result.message}"))
+							} else {
+								result.printStackTraceDebug()
+								throw result
+							}
+						}
+						is java.util.concurrent.TimeoutException -> {
+							result.printStackTraceDebug()
+							showTestResult(Exception("${getString(R.string.proxy_timeout)}: ${result.message}"))
+						}
+						else -> {
+							result.printStackTraceDebug()
+							showTestResult(Exception("Proxy connection failed: ${result.message}"))
+						}
 					}
+				} else {
+					showTestResult(null)
 				}
-				showTestResult(null)
-			} catch (e: kotlinx.coroutines.TimeoutCancellationException) {
-				e.printStackTraceDebug()
-				showTestResult(Exception("${getString(R.string.proxy_timeout)}: ${e.message}"))
 			} catch (e: CancellationException) {
-				throw e
-			} catch (e: java.net.SocketTimeoutException) {
-				e.printStackTraceDebug()
-				showTestResult(Exception("${getString(R.string.proxy_timeout)}: ${e.message}"))
-			} catch (e: java.net.ConnectException) {
-				e.printStackTraceDebug()
-				showTestResult(Exception("${getString(R.string.proxy_connection_failed)}: ${e.message}"))
-			} catch (e: java.net.UnknownHostException) {
-				e.printStackTraceDebug()
-				showTestResult(Exception("${getString(R.string.proxy_unknown_host)}: ${e.message}"))
-			} catch (e: javax.net.ssl.SSLException) {
-				e.printStackTraceDebug()
-				showTestResult(Exception("${getString(R.string.proxy_ssl_error)}: ${e.message}"))
-			} catch (e: java.net.SocketException) {
-				when {
-					e.message?.contains("proxy", ignoreCase = true) == true ||
-					e.message?.contains("SOCKS", ignoreCase = true) == true ||
-					e.message?.contains("socks", ignoreCase = true) == true -> {
-						e.printStackTraceDebug()
-						showTestResult(Exception("${getString(R.string.proxy_connection_failed)}: ${e.message}"))
-					}
-					else -> {
-						e.printStackTraceDebug()
-						throw e
-					}
-				}
-			} catch (e: java.io.IOException) {
-				if (e.message?.contains("SOCKS", ignoreCase = true) == true ||
-					e.message?.contains("connection", ignoreCase = true) == true ||
-					e.message?.contains("reset", ignoreCase = true) == true ||
-					e.message?.contains("handshake", ignoreCase = true) == true ||
-					e.message?.contains("authentication", ignoreCase = true) == true) {
-					e.printStackTraceDebug()
-					showTestResult(Exception("${getString(R.string.proxy_connection_failed)}: ${e.message}"))
-				} else {
-					e.printStackTraceDebug()
-					throw e
-				}
-			} catch (e: java.lang.SecurityException) {
-				e.printStackTraceDebug()
-				showTestResult(Exception("${getString(R.string.proxy_ssl_error)}: ${e.message}"))
-			} catch (e: java.lang.RuntimeException) {
-				if (e.message?.contains("SOCKS", ignoreCase = true) == true ||
-					e.message?.contains("authentication", ignoreCase = true) == true ||
-					e.message?.contains("handshake", ignoreCase = true) == true ||
-					e.message?.contains("proxy", ignoreCase = true) == true) {
-					e.printStackTraceDebug()
-					showTestResult(Exception("${getString(R.string.proxy_connection_failed)}: ${e.message}"))
-				} else {
-					e.printStackTraceDebug()
-					throw e
-				}
-			} catch (e: java.util.concurrent.TimeoutException) {
-				e.printStackTraceDebug()
-				showTestResult(Exception("${getString(R.string.proxy_timeout)}: ${e.message}"))
-			} catch (e: java.util.concurrent.CancellationException) {
-				e.printStackTraceDebug()
+				throw e  // Allow cancellation to propagate
 			} catch (e: Throwable) {
 				e.printStackTraceDebug()
 				showTestResult(Exception("Proxy connection failed: ${e.message}"))
