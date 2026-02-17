@@ -738,6 +738,9 @@
     <string name="popular_today">Popular today</string>
     <string name="popular_in_week">Popular this week</string>
     <string name="popular_in_month">Popular this month</string>
+    <string name="url_error_report">https://your-error-report-url.com</string>
+    <string name="acra_login">your_acra_username</string>
+    <string name="acra_password">your_acra_password</string>
     <string name="popular_in_year">Popular this year</string>
     <string name="original_language">Original language</string>
     <string name="year">Year</string>
@@ -919,4 +922,13 @@
     <string name="proxy_ssl_error">Proxy SSL error</string>
     <string name="error_empty_response">Empty response received</string>
     <string name="error_request_failed">Request failed</string>
+    <string name="logcat_viewer">Logcat Viewer</string>
+    <string name="logcat_controls">Logcat Controls</string>
+    <string name="save_log">Save Log</string>
+    <string name="save_log_summary">Save logcat output to a file</string>
+    <string name="copy_log">Copy Log</string>
+    <string name="copy_log_summary">Copy logcat output to clipboard</string>
+    <string name="clear_log">Clear Log</string>
+    <string name="clear_log_summary">Clear the current logcat display</string>
+    <string name="permission_denied">Permission denied</string>
 </resources>
