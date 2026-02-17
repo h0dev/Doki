@@ -50,11 +50,7 @@
 		android:key="services"
 		android:title="@string/services" />
 
-	<PreferenceScreen
-		android:fragment="org.dokiteam.doki.settings.LogcatViewerFragment"
-		android:icon="@drawable/ic_console"
-		android:key="logcat_viewer"
-		android:title="@string/logcat_viewer" />
+
 
 	<PreferenceScreen
 		android:fragment="org.dokiteam.doki.settings.about.AboutSettingsFragment"

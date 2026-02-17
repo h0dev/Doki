@@ -919,13 +919,6 @@
     <string name="proxy_ssl_error">Proxy SSL error</string>
     <string name="error_empty_response">Empty response received</string>
     <string name="error_request_failed">Request failed</string>
-    <string name="logcat_viewer">Logcat Viewer</string>
-    <string name="logcat_controls">Logcat Controls</string>
-    <string name="save_log">Save Log</string>
-    <string name="save_log_summary">Save logcat output to a file</string>
-    <string name="copy_log">Copy Log</string>
-    <string name="copy_log_summary">Copy logcat output to clipboard</string>
-    <string name="clear_log">Clear Log</string>
-    <string name="clear_log_summary">Clear the current logcat display</string>
+
     <string name="permission_denied">Permission denied</string>
 </resources>

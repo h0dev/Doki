@@ -14,4 +14,9 @@
 		android:persistent="false"
 		android:title="@string/wi_lib_name" />
 
+	<Preference
+		android:key="logcat_viewer"
+		android:title="@string/logcat_viewer"
+		android:summary="@string/logcat_viewer_summary" />
+
 </androidx.preference.PreferenceScreen>

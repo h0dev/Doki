@@ -13,10 +13,11 @@ TODO List:
 ## New Features
 
 ### Logcat Viewer
-- Added a Logcat Viewer in Settings for debugging purposes
-- Features filtering by log level (Verbose, Debug, Info, Warn, Error, Assert)
-- Includes save to file, copy to clipboard, and clear functions
+- Added a Logcat Viewer integrated into Debug Settings for debugging purposes
+- Features filtering by log level (All, Verbose, Debug, Info, Warn, Error, Assert) via a spinner
+- Includes save to file, copy to clipboard, and clear functions as inline buttons
 - Uses color coding for different log levels
+- Always visible on the Debug tab with filter controls at the top
 - Requires storage permission for save functionality
 
 ### SOCKS Proxy Stability Fixes

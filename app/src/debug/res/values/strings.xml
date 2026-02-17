@@ -1,4 +1,13 @@
 <resources>
 	<string name="app_name" translatable="false">Doki Dev</string>
 	<string name="strict_mode">Strict mode</string>
+	<string name="logcat_viewer">Logcat Viewer</string>
+	<string name="logcat_viewer_summary">View and filter application logs</string>
+	<string name="logcat_controls">Logcat Controls</string>
+	<string name="save_log">Save to File</string>
+	<string name="save_log_summary">Save current logs to a file</string>
+	<string name="copy_log">Copy to Clipboard</string>
+	<string name="copy_log_summary">Copy logs to clipboard</string>
+	<string name="clear_log">Clear Logs</string>
+	<string name="clear_log_summary">Clear the current log view</string>
 </resources>
