@@ -34,7 +34,6 @@ import java.util.Locale
 class LogcatViewerFragment : BasePreferenceFragment(R.string.logcat_viewer) {
 
     private val logcatAdapter = LogcatAdapter()
-    private var recyclerView: RecyclerView? = null
     private var searchView: SearchView? = null
     private var filterSpinner: androidx.appcompat.widget.AppCompatSpinner? = null
     private var copyButton: Preference? = null
@@ -92,16 +91,13 @@ class LogcatViewerFragment : BasePreferenceFragment(R.string.logcat_viewer) {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)
 
-        val contentContainer = view.findViewById<ViewGroup>(android.R.id.list_container) ?: 
-            view.findViewById(android.R.id.content)
-
-        recyclerView = RecyclerView(requireContext()).apply {
-            id = View.generateViewId()
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = logcatAdapter
+        if (this.recyclerView != null) {
+            this.recyclerView?.layoutManager = LinearLayoutManager(requireContext())
+            this.recyclerView?.adapter = logcatAdapter
         }
 
-        contentContainer?.addView(recyclerView, 0)
+        val contentContainer = view.findViewById<ViewGroup>(android.R.id.list_container) ?: 
+            view.findViewById(android.R.id.content)
 
         createAdditionalViews(contentContainer)
 
