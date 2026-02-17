@@ -31,8 +31,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class DebugSettingsFragment : BasePreferenceFragment(R.string.debug), Preference.OnPreferenceChangeListener,
-	Preference.OnPreferenceClickListener {
+class DebugSettingsFragment : BasePreferenceFragment(R.string.debug) {
 
 	private val application
 		get() = requireContext().applicationContext as DokiApp
@@ -76,11 +75,6 @@ class DebugSettingsFragment : BasePreferenceFragment(R.string.debug), Preference
 			this.recyclerView?.layoutManager = LinearLayoutManager(requireContext())
 			this.recyclerView?.adapter = logcatAdapter
 		}
-
-		setupLogcatControls()
-
-		loadLogcat()
-	}
 
 		setupLogcatControls()
 
@@ -299,22 +293,22 @@ class DebugSettingsFragment : BasePreferenceFragment(R.string.debug), Preference
 		else -> super.onPreferenceTreeClick(preference)
 	}
 
-	override fun onPreferenceClick(preference: Preference): Boolean = when (preference.key) {
-		KEY_LEAK_CANARY -> {
-			startActivity(LeakCanary.newLeakDisplayActivityIntent())
-			true
-		}
-
-		else -> super.onPreferenceTreeClick(preference)
-	}
-
 	override fun onPreferenceChange(preference: Preference, newValue: Any?): Boolean = when (preference.key) {
 		KEY_LEAK_CANARY -> {
 			application.isLeakCanaryEnabled = newValue as Boolean
 			true
 		}
 
-		else -> false
+		else -> super.onPreferenceChange(preference, newValue)
+	}
+
+	override fun onPreferenceClick(preference: Preference): Boolean = when (preference.key) {
+		KEY_LEAK_CANARY -> {
+			startActivity(LeakCanary.newLeakDisplayActivityIntent())
+			true
+		}
+
+		else -> super.onPreferenceClick(preference)
 	}
 
 	private companion object {
