@@ -31,7 +31,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class DebugSettingsFragment : BasePreferenceFragment(R.string.debug) {
+class DebugSettingsFragment : BasePreferenceFragment(R.string.debug), Preference.OnPreferenceChangeListener {
 
 	private val application
 		get() = requireContext().applicationContext as DokiApp
