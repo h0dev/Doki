@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Environment
+import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -67,7 +68,8 @@ class LogcatViewerActivity : AppCompatActivity() {
                 filterAndDisplayLogs()
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>) {}
+            override fun onNothingSelected(parent: AdapterView<*>) {
+            }
         }
     }
 
@@ -97,11 +99,23 @@ class LogcatViewerActivity : AppCompatActivity() {
                 val bufferedReader = BufferedReader(InputStreamReader(logcatProcess!!.inputStream))
 
                 var line: String?
-                while (isReadingLogs && bufferedReader.readLine().also { line = it } != null) {
-                    line?.let { logLine ->
-                        synchronized(logBuffer) {
-                            logBuffer.add(logLine)
-                        }
+                while (isReadingLogs) {
+                    line = bufferedReader.readLine()
+                    if (line == null) break
+                    synchronized(logBuffer) {
+                        logBuffer.add(line)
+                    }
+                    runOnUiThread {
+                        filterAndDisplayLogs()
+                    }
+                }
+            } catch (e: IOException) {
+                runOnUiThread {
+                    tvLogcatOutput.text = "Error reading logcat: ${e.message}"
+                }
+            }
+        }.start()
+    }
                         runOnUiThread {
                             filterAndDisplayLogs()
                         }
@@ -135,9 +149,13 @@ class LogcatViewerActivity : AppCompatActivity() {
             }
 
             tvLogcatOutput.text = coloredLogs.toString()
-            tvLogcatOutput.setSelection(
-                tvLogcatOutput.text.length.coerceAtMost(100000)
-            )
+            tvLogcatOutput.post {
+                tvLogcatOutput.parent?.let { parent ->
+                    if (parent is ScrollView) {
+                        parent.fullScroll(android.view.View.FOCUS_DOWN)
+                    }
+                }
+            }
         }
     }
 
