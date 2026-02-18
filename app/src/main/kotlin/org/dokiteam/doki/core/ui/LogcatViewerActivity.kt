@@ -27,6 +27,7 @@ class LogcatViewerActivity : AppCompatActivity() {
     private var logcatProcess: Process? = null
     private var isReadingLogs = false
     private val logBuffer = mutableListOf<String>()
+    private val maxBufferSize = 10000
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -104,9 +105,15 @@ class LogcatViewerActivity : AppCompatActivity() {
                     if (line == null) break
                     synchronized(logBuffer) {
                         logBuffer.add(line)
+                        // Keep buffer size reasonable
+                        if (logBuffer.size > maxBufferSize) {
+                            logBuffer.removeAt(0)
+                        }
                     }
-                    runOnUiThread {
-                        filterAndDisplayLogs()
+                    if (logBuffer.size % 10 == 0 || logBuffer.size < 10) {
+                        runOnUiThread {
+                            filterAndDisplayLogs()
+                        }
                     }
                 }
             } catch (e: IOException) {
@@ -131,6 +138,28 @@ class LogcatViewerActivity : AppCompatActivity() {
                     else -> logBuffer
                 }
             }
+
+            val displayLogs = if (filteredLogs.size > 2000) {
+                filteredLogs.takeLast(2000)
+            } else {
+                filteredLogs
+            }
+
+            val coloredLogs = StringBuilder()
+            displayLogs.forEach { logLine ->
+                coloredLogs.append(formatLogLine(logLine)).append("\n")
+            }
+
+            tvLogcatOutput.text = coloredLogs.toString()
+            tvLogcatOutput.post {
+                tvLogcatOutput.parent?.let { parent ->
+                    if (parent is ScrollView) {
+                        parent.fullScroll(View.FOCUS_DOWN)
+                    }
+                }
+            }
+        }
+    }
 
             val coloredLogs = StringBuilder()
             filteredLogs.forEach { logLine ->

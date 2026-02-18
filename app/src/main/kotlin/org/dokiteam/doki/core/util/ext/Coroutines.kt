@@ -10,7 +10,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
-import org.dokiteam.doki.core.util.AcraCoroutineErrorHandler
+import org.dokiteam.doki.core.util.CoroutineErrorHandler
 import org.dokiteam.doki.core.util.RetainedLifecycleCoroutineScope
 import org.dokiteam.doki.parsers.util.cancelAll
 import org.dokiteam.doki.parsers.util.runCatchingCancellable
@@ -19,7 +19,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
 
 val processLifecycleScope: CoroutineScope
-	get() = ProcessLifecycleOwner.get().lifecycleScope + AcraCoroutineErrorHandler()
+	get() = ProcessLifecycleOwner.get().lifecycleScope + CoroutineErrorHandler(null)
 
 val RetainedLifecycle.lifecycleScope: RetainedLifecycleCoroutineScope
 	inline get() = RetainedLifecycleCoroutineScope(this)

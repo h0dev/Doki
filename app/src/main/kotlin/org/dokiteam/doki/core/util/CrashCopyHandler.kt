@@ -46,8 +46,14 @@ class CrashCopyHandler(
         val pw = PrintWriter(sw)
         throwable.printStackTrace(pw)
         
+        val appVersion = try {
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName
+        } catch (e: Exception) {
+            "Unknown"
+        }
+        
         return buildString {
-            appendLine("App Version: ${context.packageManager.getPackageInfo(context.packageName, 0).versionName}")
+            appendLine("App Version: $appVersion")
             appendLine("Android Version: ${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})")
             appendLine("Device: ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}")
             appendLine("Crash Time: ${java.time.LocalDateTime.now()}")
