@@ -1,54 +1,61 @@
 ---
 session: ses_3998
-updated: 2026-02-17T09:01:41.079Z
+updated: 2026-02-18T00:20:20.528Z
 ---
 
 # Session Summary
 
 ## Goal
-Integrate the logcat viewer into the Debug tab with filter controls and ensure the build compiles successfully, fixing the Kotlin compilation errors in DebugSettingsFragment.kt.
+Replace ACRA crash reporting with a user-friendly error handler that allows copying error logs instead of sending them to a server, while maintaining all existing app functionality.
 
 ## Constraints & Preferences
+- No ACRA dependencies or crash reporting to external servers
+- Users should be able to copy error details to clipboard
+- Maintain existing app functionality and architecture
 - No unnecessary comments in code to avoid hooks
-- Proper Android fragment lifecycle implementation
-- Maintain existing project patterns and architecture
-- Use BasePreferenceFragment as the base class
-- Handle SplitSwitchPreference properly with required interfaces
+- Preserve existing preferences and UI behavior
 
 ## Progress
 ### Done
-- [x] Identified compilation errors in DebugSettingsFragment.kt: assignment type mismatch for preference listeners, unresolved 'recyclerview' reference, and missing interface implementations
-- [x] Fixed the class to implement Preference.OnPreferenceChangeListener to resolve SplitSwitchPreference assignment issues
-- [x] Located BasePreferenceFragment to understand correct RecyclerView reference
-- [x] Identified that SplitSwitchPreference expects specific interfaces
+- [x] Created `CrashCopyHandler.kt` with custom uncaught exception handling that shows error details and copy button
+- [x] Added `copy_error` string resource to strings.xml
+- [x] Modified `BaseApp.kt` to remove ACRA dependencies and replace with custom crash handler
+- [x] Fixed DebugSettingsFragment.kt to properly integrate logcat viewer as additional preference without replacing existing preferences
+- [x] Removed ACRA-related functionality and imports from BaseApp.kt
 
 ### In Progress
-- [ ] Fix the RecyclerView reference from 'recyclerview' to correct ID
-- [ ] Ensure all required interface methods are properly implemented
+- [ ] {Current work - what's actively being worked on}
 
 ### Blocked
 - (none)
 
 ## Key Decisions
-- **Interface Implementation**: Re-add Preference.OnPreferenceChangeListener interface since SplitSwitchPreference requires it for onPreferenceChangeListener assignment - this resolves the type mismatch error
-- **RecyclerView Reference**: BasePreferenceFragment provides RecyclerView through the recyclerView property which maps to listView from PreferenceFragmentCompat
+- **Remove ACRA completely**: Replaced with custom exception handler to give users control over error reporting by copying logs instead of auto-sending to server
+- **Preserve preference structure**: Fixed DebugSettingsFragment to show all preferences normally instead of replacing the list with logcat UI
+- **User-controlled error reporting**: Created a dialog that shows crash details and allows users to copy them instead of auto-submitting
 
 ## Next Steps
-1. Fix the unresolved 'recyclerview' reference on line 92 by changing to correct ID or using the recyclerView property
-2. Verify all interface methods are properly implemented for BasePreferenceFragment
-3. Test compilation to ensure all errors are resolved
+1. Verify that all ACRA-related code is removed from the codebase
+2. Check if AcraScreenLogger.kt needs to be modified or removed since it depends on ACRA
+3. Test the new crash handler implementation
+4. Update README to reflect the change from server crash reporting to user-controlled error copying
 
 ## Critical Context
-- Error: "Assignment type mismatch: actual type is 'DebugSettingsFragment', but 'Preference.OnPreferenceChangeListener?' was expected" on lines 59-60 for SplitSwitchPreference
-- Error: "Unresolved reference 'recyclerview'" on line 92 where code tries to findViewById
-- Error: "'onPreferenceChange' overrides nothing" and "'onPreferenceClick' overrides nothing" indicating improper interface handling
-- BasePreferenceFragment provides recyclerView property that maps to listView
-- SplitSwitchPreference expects preference listeners to implement specific interfaces
+- Created new `CrashCopyHandler.kt` in `/root/workspace/Doki/app/src/main/kotlin/org/dokiteam/doki/core/util/` that handles uncaught exceptions by showing a dialog with copy option
+- Modified BaseApp.kt to use `Thread.setDefaultUncaughtExceptionHandler()` with custom handler
+- Fixed DebugSettingsFragment.kt to preserve all original preferences while adding logcat viewer functionality
+- String resource "copy_error" added for the copy button on error dialogs
 
 ## File Operations
 ### Read
 - `/root/workspace/Doki/app/src/debug/kotlin/org/dokiteam/doki/settings/DebugSettingsFragment.kt`
-- `/root/workspace/Doki/app/src/main/kotlin/org/dokiteam/doki/core/ui/BasePreferenceFragment.kt`
+- `/root/workspace/Doki/app/src/debug/res/xml/pref_debug.xml`
+- `/root/workspace/Doki/app/src/main/kotlin/org/dokiteam/doki/core/BaseApp.kt`
+- `/root/workspace/Doki/app/src/main/kotlin/org/dokiteam/doki/core/util/AcraScreenLogger.kt`
+- `/root/workspace/Doki/app/src/main/res/values/strings.xml`
 
 ### Modified
 - `/root/workspace/Doki/app/src/debug/kotlin/org/dokiteam/doki/settings/DebugSettingsFragment.kt`
+- `/root/workspace/Doki/app/src/main/kotlin/org/dokiteam/doki/core/BaseApp.kt`
+- `/root/workspace/Doki/app/src/main/kotlin/org/dokiteam/doki/core/util/CrashCopyHandler.kt`
+- `/root/workspace/Doki/app/src/main/res/values/strings.xml`

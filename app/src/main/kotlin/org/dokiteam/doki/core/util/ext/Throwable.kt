@@ -12,8 +12,7 @@ import okhttp3.internal.http2.StreamResetException
 import okio.FileNotFoundException
 import okio.IOException
 import okio.ProtocolException
-import org.acra.ktx.sendSilentlyWithAcra
-import org.acra.ktx.sendWithAcra
+
 import org.jsoup.HttpStatusException
 import org.dokiteam.doki.BuildConfig
 import org.dokiteam.doki.R
@@ -232,11 +231,10 @@ fun Throwable.isNetworkError(): Boolean {
 }
 
 fun Throwable.report(silent: Boolean = false) {
-    val exception = CaughtException(this)
     if (!silent) {
-        exception.sendWithAcra()
-    } else if (!BuildConfig.DEBUG) {
-        exception.sendSilentlyWithAcra()
+        android.util.Log.e("ErrorReport", "Exception occurred: ${this.message}", this)
+    } else {
+        android.util.Log.w("ErrorReport", "Silent exception: ${this.message}", this)
     }
 }
 

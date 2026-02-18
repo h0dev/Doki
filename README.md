@@ -25,7 +25,7 @@ TODO List:
 - Added proper exception handling specific to SOCKS proxy connection issues
 - Better timeout values configured for different proxy types
 
-### ACRA Crash Reporting Configuration
-- Configured ACRA crash reporting endpoints in BaseApp
-- Set up authentication and custom data collection
-- Added proper crash dialog configuration
+### Crash Reporting Configuration
+- Replaced ACRA crash reporting with user-controlled error handler
+- Users can now copy error details to clipboard instead of auto-sending to server
+- Maintains all existing app functionality while giving users control over error reporting

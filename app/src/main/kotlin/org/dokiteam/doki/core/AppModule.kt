@@ -46,7 +46,7 @@ import org.dokiteam.doki.core.parser.favicon.FaviconFetcher
 import org.dokiteam.doki.core.prefs.AppSettings
 import org.dokiteam.doki.core.ui.image.CoilImageGetter
 import org.dokiteam.doki.core.ui.util.ActivityRecreationHandle
-import org.dokiteam.doki.core.util.AcraScreenLogger
+import org.dokiteam.doki.core.util.ScreenLogger
 import org.dokiteam.doki.core.util.FileSize
 import org.dokiteam.doki.core.util.ext.connectivityManager
 import org.dokiteam.doki.core.util.ext.isLowRamDevice
@@ -174,12 +174,12 @@ interface AppModule {
 		fun provideActivityLifecycleCallbacks(
 			appProtectHelper: AppProtectHelper,
 			activityRecreationHandle: ActivityRecreationHandle,
-			acraScreenLogger: AcraScreenLogger,
+			screenLogger: ScreenLogger,
 			screenshotPolicyHelper: ScreenshotPolicyHelper,
 		): Set<@JvmSuppressWildcards Application.ActivityLifecycleCallbacks> = arraySetOf(
 			appProtectHelper,
 			activityRecreationHandle,
-			acraScreenLogger,
+			screenLogger,
 			screenshotPolicyHelper,
 		)
 
