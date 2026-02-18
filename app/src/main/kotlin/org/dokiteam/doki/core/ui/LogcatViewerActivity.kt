@@ -116,18 +116,7 @@ class LogcatViewerActivity : AppCompatActivity() {
             }
         }.start()
     }
-                        runOnUiThread {
-                            filterAndDisplayLogs()
-                        }
-                    }
-                }
-            } catch (e: IOException) {
-                runOnUiThread {
-                    tvLogcatOutput.text = "Error reading logcat: ${e.message}"
-                }
-            }
-        }.start()
-    }
+
 
     private fun filterAndDisplayLogs() {
         runOnUiThread {
