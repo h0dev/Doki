@@ -161,22 +161,6 @@ class LogcatViewerActivity : AppCompatActivity() {
         }
     }
 
-            val coloredLogs = StringBuilder()
-            filteredLogs.forEach { logLine ->
-                coloredLogs.append(formatLogLine(logLine)).append("\n")
-            }
-
-            tvLogcatOutput.text = coloredLogs.toString()
-            tvLogcatOutput.post {
-                tvLogcatOutput.parent?.let { parent ->
-                    if (parent is ScrollView) {
-                        parent.fullScroll(android.view.View.FOCUS_DOWN)
-                    }
-                }
-            }
-        }
-    }
-
     private fun containsLogLevel(logLine: String, levelPrefix: String): Boolean {
         return if (logLine.contains(": ")) {
             val parts = logLine.split(": ", limit = 2)
