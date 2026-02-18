@@ -269,6 +269,9 @@
 			android:name="org.dokiteam.doki.tracker.ui.debug.TrackerDebugActivity"
 			android:label="@string/tracker_debug_info" />
 		<activity
+			android:name="org.dokiteam.doki.core.ui.LogcatViewerActivity"
+			android:label="@string/logcat_viewer" />
+		<activity
 			android:name="org.dokiteam.doki.picker.ui.PageImagePickActivity"
 			android:exported="true"
 			android:label="@string/pick_manga_page">

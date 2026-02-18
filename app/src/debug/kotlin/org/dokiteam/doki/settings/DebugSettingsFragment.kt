@@ -57,7 +57,7 @@ class DebugSettingsFragment : BasePreferenceFragment(R.string.debug), Preference
 
 	private fun setupLogcatControls() {
 		findPreference<Preference>(KEY_LOGCAT_VIEWER)?.setOnPreferenceClickListener {
-			Toast.makeText(context, "Logcat viewer would open in a separate screen", Toast.LENGTH_SHORT).show()
+			startActivity(android.content.Intent(context, org.dokiteam.doki.core.ui.LogcatViewerActivity::class.java))
 			true
 		}
 	}
