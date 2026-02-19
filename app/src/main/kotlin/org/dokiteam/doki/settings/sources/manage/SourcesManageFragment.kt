@@ -172,6 +172,12 @@ class SourcesManageFragment :
 				true
 			}
 
+			R.id.action_test_sources -> {
+				val intent = android.content.Intent(requireContext(), org.dokiteam.doki.settings.sources.SourceTesterActivity::class.java)
+				startActivity(intent)
+				true
+			}
+
 			else -> false
 		}
 

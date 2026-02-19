@@ -48,12 +48,7 @@
             android:text="@string/clear"
             android:layout_marginEnd="4dp" />
 
-        <Button
-            android:id="@+id/btnTestSources"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Test Sources"
-            android:layout_marginStart="4dp" />
+
 
     </LinearLayout>
 

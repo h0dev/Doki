@@ -19,9 +19,13 @@ TODO List:
 - Uses color coding for different log levels
 - Always visible on the Debug tab with filter controls at the top
 - Requires storage permission for save functionality
-- Added source testing functionality to test all manga sources
 - Added log limit options (100, 200, 500, 1000, or All) to prevent UI hanging with large log volumes
 - Fixed UI positioning and performance issues for better user experience
+
+### Source Testing Feature
+- Added a dedicated Source Testing activity accessible from the Sources management menu
+- Allows users to test all manga sources for connectivity and functionality
+- Provides detailed feedback on each source's status and properties
 
 ### SOCKS Proxy Stability Fixes
 - Improved timeout handling to prevent crashes during proxy testing

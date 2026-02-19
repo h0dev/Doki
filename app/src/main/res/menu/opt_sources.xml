@@ -27,4 +27,9 @@
 		android:title="@string/disable_all"
 		app:showAsAction="never" />
 
+	<item
+		android:id="@+id/action_test_sources"
+		android:title="Test Sources"
+		app:showAsAction="never" />
+
 </menu>

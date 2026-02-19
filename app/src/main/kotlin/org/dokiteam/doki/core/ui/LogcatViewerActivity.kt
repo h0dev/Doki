@@ -10,7 +10,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import org.dokiteam.doki.R
-import org.dokiteam.doki.parsers.model.MangaParserSource
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -23,7 +22,6 @@ class LogcatViewerActivity : AppCompatActivity() {
     private lateinit var btnSave: Button
     private lateinit var btnCopy: Button
     private lateinit var btnClear: Button
-    private lateinit var btnTestSources: Button
     private lateinit var tvLogcatOutput: TextView
     private lateinit var progressBar: ProgressBar
 
@@ -61,7 +59,6 @@ class LogcatViewerActivity : AppCompatActivity() {
         btnSave = findViewById(R.id.btnSave)
         btnCopy = findViewById(R.id.btnCopy)
         btnClear = findViewById(R.id.btnClear)
-        btnTestSources = findViewById(R.id.btnTestSources)
         tvLogcatOutput = findViewById(R.id.tvLogcatOutput)
         progressBar = findViewById(R.id.progressBar)
     }
@@ -120,10 +117,6 @@ class LogcatViewerActivity : AppCompatActivity() {
 
         btnClear.setOnClickListener {
             clearLogcatOutput()
-        }
-
-        btnTestSources.setOnClickListener {
-            testAllSources()
         }
     }
 
@@ -278,66 +271,6 @@ class LogcatViewerActivity : AppCompatActivity() {
             logBuffer.clear()
         }
         tvLogcatOutput.text = ""
-    }
-
-    private fun testAllSources() {
-        Toast.makeText(this, "Testing all manga sources...", Toast.LENGTH_SHORT).show()
-        
-        synchronized(logBuffer) {
-            logBuffer.add("INFO: Starting manga source test")
-            logBuffer.add("INFO: Testing ${MangaParserSource.entries.size} total sources")
-        }
-        
-        Thread {
-            var successCount = 0
-            var errorCount = 0
-            
-            for (source in MangaParserSource.entries) {
-                try {
-                    val testLog = "INFO: Testing source: ${source.name} (locale: ${source.locale}, type: ${source.contentType})"
-                    synchronized(logBuffer) {
-                        logBuffer.add(testLog)
-                    }
-                    
-                    runOnUiThread {
-                        tvLogcatOutput.text = "Testing source: ${source.name}...\n${tvLogcatOutput.text}"
-                    }
-                    
-                    val sourceTitle = source.title
-                    val sourceLocale = source.locale
-                    val sourceContentType = source.contentType
-                    val sourceIsBroken = source.isBroken
-                    
-                    val successLog = "SUCCESS: Source ${source.name} OK - Title: $sourceTitle, Locale: $sourceLocale, Type: $sourceContentType, Broken: $sourceIsBroken"
-                    synchronized(logBuffer) {
-                        logBuffer.add(successLog)
-                    }
-                    
-                    successCount++
-                    
-                } catch (e: Exception) {
-                    val errorLog = "ERROR: Source ${source.name} failed - ${e.message}"
-                    synchronized(logBuffer) {
-                        logBuffer.add(errorLog)
-                    }
-                    
-                    errorCount++
-                }
-            }
-            
-            val finalLog1 = "INFO: Manga source test completed. Success: $successCount, Errors: $errorCount"
-            val finalLog2 = "INFO: Testing finished at ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())}"
-            
-            synchronized(logBuffer) {
-                logBuffer.add(finalLog1)
-                logBuffer.add(finalLog2)
-            }
-            
-            runOnUiThread {
-                filterAndDisplayLogs()
-                Toast.makeText(this, "Source testing completed. Success: $successCount, Errors: $errorCount", Toast.LENGTH_LONG).show()
-            }
-        }.start()
     }
 
     override fun onDestroy() {
