@@ -2,13 +2,16 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:fitsSystemWindows="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp">
+        android:padding="12dp"
+        android:background="?attr/colorSurface"
+        android:elevation="4dp">
 
         <Spinner
             android:id="@+id/spinnerLogLevel"
@@ -66,7 +69,7 @@
                 android:background="@android:color/black"
                 android:textColor="@android:color/white"
                 android:fontFamily="monospace"
-                android:textSize="10sp"
+                android:textSize="12sp"
                 android:scrollbars="vertical"
                 android:isScrollContainer="false" />
 
@@ -75,3 +78,4 @@
     </ScrollView>
 
 </LinearLayout>
+

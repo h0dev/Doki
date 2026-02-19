@@ -100,9 +100,11 @@ class LogcatViewerActivity : AppCompatActivity() {
                 val bufferedReader = BufferedReader(InputStreamReader(logcatProcess!!.inputStream))
 
                 var line: String?
+                var updateCounter = 0
                 while (isReadingLogs) {
                     line = bufferedReader.readLine()
                     if (line == null) break
+                    
                     synchronized(logBuffer) {
                         logBuffer.add(line)
                         // Keep buffer size reasonable
@@ -110,10 +112,13 @@ class LogcatViewerActivity : AppCompatActivity() {
                             logBuffer.removeAt(0)
                         }
                     }
-                    if (logBuffer.size % 10 == 0 || logBuffer.size < 10) {
+                    
+                    updateCounter++
+                    if (updateCounter % 20 == 0) {
                         runOnUiThread {
                             filterAndDisplayLogs()
                         }
+                        Thread.sleep(50)
                     }
                 }
             } catch (e: IOException) {
@@ -127,16 +132,18 @@ class LogcatViewerActivity : AppCompatActivity() {
 
     private fun filterAndDisplayLogs() {
         runOnUiThread {
-            val filteredLogs = synchronized(logBuffer) {
-                when (logLevel) {
-                    "Verbose" -> logBuffer.filter { containsLogLevel(it, "V/") }
-                    "Debug" -> logBuffer.filter { containsLogLevel(it, "D/") }
-                    "Info" -> logBuffer.filter { containsLogLevel(it, "I/") }
-                    "Warn" -> logBuffer.filter { containsLogLevel(it, "W/") }
-                    "Error" -> logBuffer.filter { containsLogLevel(it, "E/") }
-                    "Assert" -> logBuffer.filter { containsLogLevel(it, "A/") }
-                    else -> logBuffer
-                }
+            val logBufferSnapshot = synchronized(logBuffer) {
+                logBuffer.toList()
+            }
+            
+            val filteredLogs = when (logLevel) {
+                "Verbose" -> logBufferSnapshot.filter { containsLogLevel(it, "V/") }
+                "Debug" -> logBufferSnapshot.filter { containsLogLevel(it, "D/") }
+                "Info" -> logBufferSnapshot.filter { containsLogLevel(it, "I/") }
+                "Warn" -> logBufferSnapshot.filter { containsLogLevel(it, "W/") }
+                "Error" -> logBufferSnapshot.filter { containsLogLevel(it, "E/") }
+                "Assert" -> logBufferSnapshot.filter { containsLogLevel(it, "A/") }
+                else -> logBufferSnapshot
             }
 
             val displayLogs = if (filteredLogs.size > 2000) {
@@ -145,12 +152,12 @@ class LogcatViewerActivity : AppCompatActivity() {
                 filteredLogs
             }
 
-            val coloredLogs = StringBuilder()
+            val textBuilder = StringBuilder()
             displayLogs.forEach { logLine ->
-                coloredLogs.append(formatLogLine(logLine)).append("\n")
+                textBuilder.append(logLine).append("\n")
             }
 
-            tvLogcatOutput.text = coloredLogs.toString()
+            tvLogcatOutput.text = textBuilder.toString()
             tvLogcatOutput.post {
                 tvLogcatOutput.parent?.let { parent ->
                     if (parent is ScrollView) {
@@ -171,18 +178,6 @@ class LogcatViewerActivity : AppCompatActivity() {
     }
 
     private fun formatLogLine(logLine: String): String {
-        return when {
-            logLine.contains(": V/") || logLine.contains("/V ") -> formatWithColor(logLine, "#808080")
-            logLine.contains(": D/") || logLine.contains("/D ") -> formatWithColor(logLine, "#0000FF")
-            logLine.contains(": I/") || logLine.contains("/I ") -> formatWithColor(logLine, "#008000")
-            logLine.contains(": W/") || logLine.contains("/W ") -> formatWithColor(logLine, "#FFFF00")
-            logLine.contains(": E/") || logLine.contains("/E ") -> formatWithColor(logLine, "#FF0000")
-            logLine.contains(": A/") || logLine.contains("/A ") -> formatWithColor(logLine, "#FF00FF")
-            else -> logLine
-        }
-    }
-
-    private fun formatWithColor(logLine: String, color: String): String {
         return logLine
     }
 
