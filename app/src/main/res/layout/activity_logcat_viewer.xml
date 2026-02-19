@@ -20,6 +20,13 @@
             android:layout_weight="1"
             android:layout_marginEnd="8dp" />
 
+        <Spinner
+            android:id="@+id/spinnerLogLimit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp" />
+
         <Button
             android:id="@+id/btnSave"
             android:layout_width="wrap_content"
@@ -40,6 +47,13 @@
             android:layout_height="wrap_content"
             android:text="@string/clear"
             android:layout_marginEnd="4dp" />
+
+        <Button
+            android:id="@+id/btnTestSources"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Test Sources"
+            android:layout_marginStart="4dp" />
 
     </LinearLayout>
 
